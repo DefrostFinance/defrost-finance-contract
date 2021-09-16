@@ -1,0 +1,9 @@
+node_modules/
+build/
+verify/
+.idea/
+logs/
+artifacts/
+# python compiled bytecode
+*.pyc
+
