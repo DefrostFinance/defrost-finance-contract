@@ -3,8 +3,8 @@ import "../PhoenixModules/modules/SafeMath.sol";
 import "./taxEngineData.sol";
 import "../PhoenixModules/modules/safeTransfer.sol";
 /**
- * @title FPTCoin mine pool, which manager contract is FPTCoin.
- * @dev A smart-contract which distribute some mine coins by FPTCoin balance.
+ * @title Tax calculate pool.
+ * @dev Borrow system coin, your debt will be increased with interests every minute.
  *
  */
 contract taxEngine is taxEngineData,safeTransfer {

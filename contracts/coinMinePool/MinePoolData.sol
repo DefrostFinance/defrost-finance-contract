@@ -39,16 +39,9 @@ contract MinePoolData is versionUpdater,Halt,proxyOperator,safeTransfer,Reentran
     mapping(address=>uint256) internal mineAmount;
     //distributed time interval
     mapping(address=>uint256) internal mineInterval;
-    /**
-     * @dev Emitted when `account` mint `amount` miner shares.
-     */
-    event DebugEvent(address indexed account,uint256 amount0,uint256 amount1);
-    /**
-     * @dev Emitted when `account` burn `amount` miner shares.
-     */
-    event RedeemMineCoin(address indexed from, address indexed mineCoin, uint256 value);
-    /**
-     * @dev Emitted when `from` transfer to `to` `amount` mineCoins.
-     */
-    event TranserMiner(address indexed from, address indexed to, uint256 amount);
+
+    event SetMineCoinInfo(address indexed from,address indexed mineCoin,uint256 _mineAmount,uint256 _mineInterval);
+    event TranserMiner(address indexed from, address indexed to);
+    event ChangeUserbalance(address indexed Account);
+    event RedeemMineCoin(address indexed from, address indexed mineCoin, uint256 value);    
 }

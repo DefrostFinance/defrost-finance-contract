@@ -2,8 +2,8 @@ pragma solidity =0.5.16;
 import "../PhoenixModules/modules/SafeMath.sol";
 import "./depositPoolData.sol";
 /**
- * @title FPTCoin mine pool, which manager contract is FPTCoin.
- * @dev A smart-contract which distribute some mine coins by FPTCoin balance.
+ * @title systemCoin deposit pool.
+ * @dev Deposit systemCoin earn interest systemcoin.
  *
  */
 contract depositPool is depositPoolData {
@@ -34,9 +34,11 @@ contract depositPool is depositPoolData {
     function depositSystemCoin(address account, uint256 amount) notHalted OneBlockLimit(msg.sender) external{
         require(systemToken.transferFrom(msg.sender, address(this), amount),"systemToken : transferFrom failed!");
         addAsset(account,amount);
+        emit Deposit(msg.sender,account,amount);
     }
-    function repaySystemCoin(address account, uint256 amount) notHalted OneBlockLimit(msg.sender) external{
+    function withdrawSystemCoin(address account, uint256 amount) notHalted OneBlockLimit(msg.sender) external{
         subAsset(msg.sender,amount);
         require(systemToken.transfer(account, amount),"systemToken : transfer failed!");
+        emit Withdraw(msg.sender,account,amount);
     }
 }

@@ -64,11 +64,13 @@ contract collateralVault is taxEngine {
         require(checkLiquidate(msg.sender,0,amount),"overflow liquidation limit!");
         systemToken.mint(account,amount);
         addAsset(msg.sender,amount);
+        emit MintSystemCoin(msg.sender,account,amount);
     }
     function repaySystemCoin(address account, uint256 amount) notHalted OneBlockLimit(msg.sender) external{
         uint256 _repayDebt = subAsset(account,amount);
         require(systemToken.transferFrom(msg.sender, taxPool, amount.sub(_repayDebt)),"systemToken : transferFrom failed!");
         systemToken.burn(msg.sender,_repayDebt);
+        emit RepaySystemCoin(msg.sender,account,amount);
     }
     function liquidate(address account) notHalted external{        
         require(!checkLiquidate(account,0,0),"liquidation check error!");
@@ -83,8 +85,11 @@ contract collateralVault is taxEngine {
         uint256 _payback = allDebt.mul(calDecimals+liquidationReward)/collateralPrice;
         if (_payback<=collateral){
             _redeem(msg.sender,collateralToken,collateral);
+            emit Liquidate(msg.sender,account,collateralToken,allDebt,punish,collateral);
         }else{
             _redeem(msg.sender,collateralToken,_payback);
+            emit Liquidate(msg.sender,account,collateralToken,allDebt,punish,_payback);
         }
+        
     }
 }

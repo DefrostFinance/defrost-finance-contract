@@ -1,8 +1,8 @@
 pragma solidity =0.5.16;
 import "../PhoenixModules/modules/SafeMath.sol";
 /**
- * @title FPTCoin mine pool, which manager contract is FPTCoin.
- * @dev A smart-contract which distribute some mine coins by FPTCoin balance.
+ * @title interest engine.
+ * @dev calculate interest by assets,compounded interest.
  *
  */
 contract interestEngine{
@@ -31,6 +31,9 @@ contract interestEngine{
     uint256 internal latestSettleTime;
     uint256 internal accumulatedRate;
 
+    event SetInterestInfo(address indexed from,uint256 _interestRate,uint256 _interestInterval);
+    event AddAsset(address indexed recieptor,uint256 amount);
+    event SubAsset(address indexed account,uint256 amount,uint256 subOrigin);
     /**
      * @dev retrieve Interest informations.
      * @return distributed Interest rate and distributed time interval.
@@ -50,13 +53,13 @@ contract interestEngine{
         _interestSettlement();
         interestRate = _interestRate;
         interestInterval = _interestInterval;
+        emit SetInterestInfo(msg.sender,_interestRate,_interestInterval);
     }
     function getAssetBalance(address account)public view returns(uint256){
         if(assetInfoMap[account].interestRateOrigin == 0 || interestInterval == 0){
             return 0;
         }
-        uint256 newRate = rpower(rayDecimals+interestRate,(now-latestSettleTime)/interestInterval,rayDecimals);
-        newRate = accumulatedRate.mul(newRate)/rayDecimals;
+        uint256 newRate = newAccumulatedRate();
         return assetInfoMap[account].assetAndInterest.mul(newRate)/assetInfoMap[account].interestRateOrigin;
     }
     /**
@@ -72,6 +75,7 @@ contract interestEngine{
         totalAssetAmount = totalAssetAmount.add(amount);
         require(assetInfoMap[account].assetAndInterest >= assetFloor, "Debt is below the limit");
         require(totalAssetAmount <= assetCeiling, "vault debt is overflow");
+        emit AddAsset(account,amount);
     }
     /**
      * @dev repay user's debt and taxes.
@@ -98,6 +102,7 @@ contract interestEngine{
             require(false,"overflow asset balance");
         }
         totalAssetAmount = totalAssetAmount.sub(amount);
+        emit SubAsset(account,amount,_subAsset);
         return _subAsset;
     }
     function rpower(uint256 x, uint256 n, uint256 base) internal pure returns (uint256 z) {
@@ -129,15 +134,18 @@ contract interestEngine{
     function _interestSettlement()internal{
         uint256 _interestInterval = interestInterval;
         if (_interestInterval>0){
-            uint256 newRate = rpower(rayDecimals+interestRate,(now-latestSettleTime)/_interestInterval,rayDecimals);
-            totalAssetAmount = totalAssetAmount.mul(newRate)/rayDecimals;
-            accumulatedRate = accumulatedRate.mul(newRate)/rayDecimals;
+            uint256 newRate = newAccumulatedRate();
+            totalAssetAmount = totalAssetAmount.mul(newRate)/accumulatedRate;
+            accumulatedRate = newRate;
             latestSettleTime = now/_interestInterval*_interestInterval;
         }else{
             latestSettleTime = now;
         }
     }
-
+    function newAccumulatedRate()internal view returns (uint256){
+        uint256 newRate = rpower(rayDecimals+interestRate,(now-latestSettleTime)/interestInterval,rayDecimals);
+        return accumulatedRate.mul(newRate)/rayDecimals;
+    }
     /**
      * @dev settle user's debt balance.
      * @param account user's account

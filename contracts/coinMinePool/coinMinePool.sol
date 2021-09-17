@@ -2,8 +2,8 @@ pragma solidity =0.5.16;
 import "./MinePoolData.sol";
 import "../PhoenixModules/modules/SafeMath.sol";
 /**
- * @title FPTCoin mine pool, which manager contract is FPTCoin.
- * @dev A smart-contract which distribute some mine coins by FPTCoin balance.
+ * @title systemCoin mine pool, which manager contract is systemCoin.
+ * @dev A smart-contract which distribute some mine coins by systemCoin balance.
  *
  */
 contract coinMinePool is MinePoolData {
@@ -75,6 +75,7 @@ contract coinMinePool is MinePoolData {
         mineAmount[mineCoin] = _mineAmount;
         mineInterval[mineCoin] = _mineInterval;
         whiteList.addWhiteListAddress(mineCoin);
+        emit SetMineCoinInfo(msg.sender,mineCoin,_mineAmount,_mineInterval);
     }
 
     /**
@@ -86,6 +87,7 @@ contract coinMinePool is MinePoolData {
         _globalSettlementAll();
         _userSettlementAll(account);
         _userSettlementAll(recieptor);
+        emit TranserMiner(account,recieptor);
     }
     /**
      * @dev mint mineCoin to account when account add collateral to collateral pool, only manager contract can modify database.
@@ -94,6 +96,7 @@ contract coinMinePool is MinePoolData {
     function changeUserbalance(address account) public onlyManager {
         _globalSettlementAll();
         _userSettlementAll(account);
+        emit ChangeUserbalance(account);
     }
     /**
      * @dev user redeem mine rewards.
@@ -106,6 +109,7 @@ contract coinMinePool is MinePoolData {
         require(minerAmount>0,"miner balance is zero");
         minerBalances[mineCoin][msg.sender] = 0;
         _redeem(msg.sender,mineCoin,minerAmount);
+        emit RedeemMineCoin(msg.sender,mineCoin,minerAmount);
     }
     /**
      * @dev settle all mine coin.
@@ -131,7 +135,6 @@ contract coinMinePool is MinePoolData {
         }else{
             latestSettleTime[mineCoin] = now;
         }
-        emit DebugEvent(mineCoin,mineNetworth[mineCoin],_totalSupply);
     }
     /**
      * @dev the auxiliary function for _mineSettlementAll. Calculate latest time phase distributied mine amount.

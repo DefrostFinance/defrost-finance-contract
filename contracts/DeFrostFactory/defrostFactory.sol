@@ -45,6 +45,8 @@ contract defrostFactory is defrostFactoryData {
             taxRate,taxInterval,debtCeiling,debtFloor,collateralRate,liquidationReward,liquidationPunish);
         Authorization(systemToken).addAuthorization(vaultPool);
         vaultsMap[vaultID] = vaultPool;
+        emit CreateVaultPool(vaultPool,vaultID,collateral,debtCeiling,debtFloor,collateralRate,
+            taxRate,taxInterval);
         return vaultPool;
     }
     function createPhxProxy(uint256 index) internal returns (address payable){
@@ -77,6 +79,7 @@ contract defrostFactory is defrostFactoryData {
         proxyOperator(address(newProxy)).setManager(systemToken);
         systemCoinMinePool = address(newProxy);
         ISystemToken(systemToken).setMinePool(address(newProxy));
+        emit CreateSystemCoinMinePool(address(newProxy));
         return address(newProxy);
     }
 }

@@ -20,4 +20,8 @@ contract defrostFactoryData is versionUpdater{
     uint256 public liquidationReward;
     uint256 public liquidationPunish; 
 
+    event CreateVaultPool(address indexed poolAddress,bytes32 indexed vaultID,address indexed collateral,uint256 debtCeiling,uint256 debtFloor,uint256 collateralRate,
+    uint256 taxRate,uint256 taxInterval);
+    event CreateSystemCoinMinePool(address indexed poolAddress);
+
 }

@@ -26,27 +26,10 @@ contract taxEngineData is Halt,versionUpdater,oneBlockLimit,ImportOracle,interes
     address public taxPool;
     ISystemToken public systemToken;
 
-    /**
-     * @dev Emitted when `account` mint `amount` miner shares.
-     */
-    event MintMiner(address indexed account,uint256 amount);
-    /**
-     * @dev Emitted when `account` burn `amount` miner shares.
-     */
-    event BurnMiner(address indexed account,uint256 amount);
-    /**
-     * @dev Emitted when `from` redeem `value` mineCoins.
-     */
-    event RedeemMineCoin(address indexed from, address indexed mineCoin, uint256 value);
-    /**
-     * @dev Emitted when `from` transfer to `to` `amount` mineCoins.
-     */
-    event TranserMiner(address indexed from, address indexed to, uint256 amount);
-    /**
-     * @dev Emitted when `account` buying options get `amount` mineCoins.
-     */
-    event BuyingMiner(address indexed account,address indexed mineCoin,uint256 amount);
-
-    event Join(address sender, address account, uint256 amount);
-    event Exit(address sender, address account, uint256 amount);
+    event MintSystemCoin(address indexed sender,address indexed account,uint256 amount);
+    event RepaySystemCoin(address indexed sender,address indexed account,uint256 amount);
+    event Liquidate(address indexed sender,address indexed account,address indexed collateralToken,
+        uint256 debt,uint256 punishment,uint256 amount);
+    event Join(address indexed sender, address indexed account, uint256 amount);
+    event Exit(address indexed sender, address indexed account, uint256 amount);
 }
