@@ -13,7 +13,7 @@ contract defrostFactoryData is versionUpdater{
     uint256 constant public vaultPoolID = 0;
     mapping(uint256=>proxyInfo) public proxyinfoMap;
     mapping(bytes32=>address) public vaultsMap;
-    address public taxPool;
+    address public interestPool;
     address public systemToken;
     address public dsOracle;
     address public systemCoinMinePool; 

@@ -60,5 +60,13 @@ contract('collateralVault', function (accounts){
         console.log("canLiquidate accounts[2]:",result);
         await factory.systemCoin.approve(vaults.vaultPool.address,ether.muln(5000),{from:accounts[2]});
         await vaults.vaultPool.liquidate(accounts[0],{from:accounts[2]})
+        result = await vaults.vaultPool.canLiquidate(accounts[0]); 
+        console.log("canLiquidate accounts[0]:",result);
+        result = await vaults.vaultPool.canLiquidate(accounts[2]); 
+        console.log("canLiquidate accounts[2]:",result);
+        result = await vaults.vaultPool.collateralBalances(accounts[0]);
+        console.log("collateralBalances accounts[0]",result.toString());
+        result = await vaults.vaultPool.getAssetBalance(accounts[0]);
+        console.log("getAssetBalance accounts[0]",result.toString());
     });
 });

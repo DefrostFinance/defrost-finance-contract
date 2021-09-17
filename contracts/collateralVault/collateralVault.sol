@@ -5,12 +5,12 @@ contract collateralVault is taxEngine {
     }
     function update() public versionUpdate {
     }
-    function initContract(bytes32 _vaultID,address _collateralToken,address _taxPool,address _systemToken,address _dsOracle,
+    function initContract(bytes32 _vaultID,address _collateralToken,address _interestPool,address _systemToken,address _dsOracle,
         uint256 _interestRate,uint256 _interestInterval,uint256 _assetCeiling,uint256 _assetFloor,
         uint256 _collateralRate,uint256 _liquidationReward,uint256 _liquidationPunish)external onlyOwner{
         vaultID = _vaultID;
         collateralToken = _collateralToken;
-        taxPool = _taxPool;
+        interestPool = _interestPool;
         systemToken = ISystemToken(_systemToken);
         _oracle = IPHXOracle(_dsOracle);
         interestRate = _interestRate;
@@ -67,8 +67,12 @@ contract collateralVault is taxEngine {
         emit MintSystemCoin(msg.sender,account,amount);
     }
     function repaySystemCoin(address account, uint256 amount) notHalted OneBlockLimit(msg.sender) external{
+        _repaySystemCoin(account,amount);
+        emit RepaySystemCoin(msg.sender,account,amount);
+    }
+    function _repaySystemCoin(address account, uint256 amount) internal{
         uint256 _repayDebt = subAsset(account,amount);
-        require(systemToken.transferFrom(msg.sender, taxPool, amount.sub(_repayDebt)),"systemToken : transferFrom failed!");
+        require(systemToken.transferFrom(msg.sender, interestPool, amount.sub(_repayDebt)),"systemToken : transferFrom failed!");
         systemToken.burn(msg.sender,_repayDebt);
         emit RepaySystemCoin(msg.sender,account,amount);
     }
@@ -79,17 +83,14 @@ contract collateralVault is taxEngine {
         uint256 allDebt = assetInfoMap[account].assetAndInterest;
         uint256 punish = allDebt.mul(liquidationPunish)/calDecimals;
         IERC20 oToken = IERC20(address(systemToken));
-        oToken.safeTransferFrom(msg.sender, address(this), allDebt);
-        oToken.safeTransferFrom(msg.sender, taxPool, punish);
+        _repaySystemCoin(account,allDebt);
+        oToken.safeTransferFrom(msg.sender, interestPool, punish);
         allDebt += punish;
         uint256 _payback = allDebt.mul(calDecimals+liquidationReward)/collateralPrice;
-        if (_payback<=collateral){
-            _redeem(msg.sender,collateralToken,collateral);
-            emit Liquidate(msg.sender,account,collateralToken,allDebt,punish,collateral);
-        }else{
-            _redeem(msg.sender,collateralToken,_payback);
-            emit Liquidate(msg.sender,account,collateralToken,allDebt,punish,_payback);
-        }
+        _payback = _payback <= collateral ? _payback : collateral;
+        collateralBalances[account] = collateralBalances[account].sub(_payback);
+        _redeem(msg.sender,collateralToken,_payback);
+        emit Liquidate(msg.sender,account,collateralToken,allDebt,punish,_payback);
         
     }
 }

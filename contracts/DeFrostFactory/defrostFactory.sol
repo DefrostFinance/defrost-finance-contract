@@ -17,9 +17,9 @@ contract defrostFactory is defrostFactoryData {
     function update() public versionUpdate {
     }
 
-    function initContract(address _taxPool,address _systemToken,address _dsOracle,address _vaultPoolImpl,
+    function initContract(address _interestPool,address _systemToken,address _dsOracle,address _vaultPoolImpl,
         uint256 _liquidationReward,uint256 _liquidationPunish)public originOnce{
-        taxPool = _taxPool;
+        interestPool = _interestPool;
         systemToken = _systemToken;
         dsOracle = _dsOracle;
         liquidationReward = _liquidationReward;
@@ -27,10 +27,10 @@ contract defrostFactory is defrostFactoryData {
         proxyinfoMap[vaultPoolID].implementation = _vaultPoolImpl;
     }
     function createVault(bytes32 vaultID,address collateral,uint256 debtCeiling,uint256 debtFloor,uint256 collateralRate,
-    uint256 taxRate,uint256 taxInterval)external onlyOrigin returns(address payable){
+    uint256 interestRate,uint256 interestInterval)external onlyOrigin returns(address payable){
         address vaultAddress = getVault(vaultID);
         require(vaultAddress == address(0),"this vault is already created!");
-        return createVaultPool(vaultID,collateral,debtCeiling,debtFloor,collateralRate,taxRate,taxInterval);
+        return createVaultPool(vaultID,collateral,debtCeiling,debtFloor,collateralRate,interestRate,interestInterval);
     }
     function getVault(bytes32 vaultID)public view returns (address){
         return vaultsMap[vaultID];
@@ -39,14 +39,14 @@ contract defrostFactory is defrostFactoryData {
         return proxyinfoMap[vaultPoolID].proxyList;
     }
     function createVaultPool(bytes32 vaultID,address collateral,uint256 debtCeiling,uint256 debtFloor,uint256 collateralRate,
-    uint256 taxRate,uint256 taxInterval)internal returns(address payable){
+    uint256 interestRate,uint256 interestInterval)internal returns(address payable){
         address payable vaultPool = createPhxProxy(vaultPoolID);
-        ICollateralVault(vaultPool).initContract(vaultID,collateral,taxPool,systemToken,dsOracle,
-            taxRate,taxInterval,debtCeiling,debtFloor,collateralRate,liquidationReward,liquidationPunish);
+        ICollateralVault(vaultPool).initContract(vaultID,collateral,interestPool,systemToken,dsOracle,
+            interestRate,interestInterval,debtCeiling,debtFloor,collateralRate,liquidationReward,liquidationPunish);
         Authorization(systemToken).addAuthorization(vaultPool);
         vaultsMap[vaultID] = vaultPool;
         emit CreateVaultPool(vaultPool,vaultID,collateral,debtCeiling,debtFloor,collateralRate,
-            taxRate,taxInterval);
+            interestRate,interestInterval);
         return vaultPool;
     }
     function createPhxProxy(uint256 index) internal returns (address payable){
