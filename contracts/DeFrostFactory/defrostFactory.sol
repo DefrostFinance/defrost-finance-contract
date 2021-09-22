@@ -17,9 +17,9 @@ contract defrostFactory is defrostFactoryData {
     function update() public versionUpdate {
     }
 
-    function initContract(address _interestPool,address _systemToken,address _dsOracle,address _vaultPoolImpl,
+    function initContract(address _reservePool,address _systemToken,address _dsOracle,address _vaultPoolImpl,
         uint256 _liquidationReward,uint256 _liquidationPunish)public originOnce{
-        interestPool = _interestPool;
+        reservePool = _reservePool;
         systemToken = _systemToken;
         dsOracle = _dsOracle;
         liquidationReward = _liquidationReward;
@@ -41,7 +41,7 @@ contract defrostFactory is defrostFactoryData {
     function createVaultPool(bytes32 vaultID,address collateral,uint256 debtCeiling,uint256 debtFloor,uint256 collateralRate,
     uint256 interestRate,uint256 interestInterval)internal returns(address payable){
         address payable vaultPool = createPhxProxy(vaultPoolID);
-        ICollateralVault(vaultPool).initContract(vaultID,collateral,interestPool,systemToken,dsOracle,
+        ICollateralVault(vaultPool).initContract(vaultID,collateral,reservePool,systemToken,dsOracle,
             interestRate,interestInterval,debtCeiling,debtFloor,collateralRate,liquidationReward,liquidationPunish);
         Authorization(systemToken).addAuthorization(vaultPool);
         vaultsMap[vaultID] = vaultPool;

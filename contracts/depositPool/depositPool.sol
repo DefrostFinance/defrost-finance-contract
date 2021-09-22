@@ -16,7 +16,7 @@ contract depositPool is depositPoolData {
     function update() public versionUpdate {
     }
     function initContract(address _systemToken,uint256 _interestRate,uint256 _interestInterval,
-        uint256 _assetCeiling,uint256 _assetFloor)external onlyOwner{
+        uint256 _assetCeiling,uint256 _assetFloor)external originOnce{
         systemToken = ISystemToken(_systemToken);
         interestRate = _interestRate;
         interestInterval = _interestInterval;

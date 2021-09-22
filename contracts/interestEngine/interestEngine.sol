@@ -67,9 +67,7 @@ contract interestEngine{
      * @param account user's account
      * @param amount the mine shared amount
      */
-    function addAsset(address account,uint256 amount) internal {
-        _interestSettlement();
-        settleUserInterest(account);
+    function addAsset(address account,uint256 amount) internal settleAccount(account){
         assetInfoMap[account].originAsset = assetInfoMap[account].originAsset.add(amount);
         assetInfoMap[account].assetAndInterest = assetInfoMap[account].assetAndInterest.add(amount);
         totalAssetAmount = totalAssetAmount.add(amount);
@@ -82,8 +80,6 @@ contract interestEngine{
      * @param amount repay amount.
      */
     function subAsset(address account,uint256 amount)internal returns(uint256) {
-        _interestSettlement();
-        settleUserInterest(account);
         uint256 originBalance = assetInfoMap[account].originAsset;
         uint256 assetAndInterest = assetInfoMap[account].assetAndInterest;
         
@@ -163,5 +159,10 @@ contract interestEngine{
             return 0;
         }
         return assetInfoMap[account].assetAndInterest.mul(accumulatedRate)/assetInfoMap[account].interestRateOrigin;
+    }
+    modifier settleAccount(address account){
+        _interestSettlement();
+        settleUserInterest(account);
+        _;
     }
 }

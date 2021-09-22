@@ -17,7 +17,7 @@ contract('coinMinePool', function (accounts){
         eventDecoder = new eventDecoderClass();
         eventDecoder.initEventsMap([collateralVaultAbi,coinMinePoolAbi,systemCoinAbi]);
         factory = await defrostFactory.createFactory(accounts[0],accounts);
-        let ray = new BN(1e15);
+        let ray = new BN(1e14);
         ray = ray.mul(new BN(1e9));
         vaults = await defrostFactory.createCollateralVault(factory,accounts[0],accounts,"ETH-2",eth,bigNum,
             "1000000000000000000","1200000000000000000",ray,1);
@@ -61,7 +61,11 @@ contract('coinMinePool', function (accounts){
         for (var k=0;k<5;k++){
             console.log("--------------------------round ", k+1, " ---------------------------------------")
             await vaults.vaultPool.join(accounts[0],ether,{from:accounts[0],value:ether})
-            await vaults.vaultPool.join(accounts[2],ether.muln(100),{from:accounts[2],value:ether.muln(100)})       
+            await vaults.vaultPool.join(accounts[2],ether.muln(100),{from:accounts[2],value:ether.muln(100)})    
+            result = await vaults.vaultPool.getAssetBalance(accounts[0]);
+            console.log("getAssetBalance accounts[0]",result.toString());
+            result = await vaults.vaultPool.getMaxBorrowAmount(accounts[0]);
+            console.log("getMaxBorrowAmount accounts[0]",result.toString());   
             await vaults.vaultPool.mintSystemCoin(accounts[0],ether.muln(2000),{from:accounts[0]})
             await logBalance(0,factory.minePool,beforeInfo.fnx.address,accounts[0],accounts[2])
             for (var i=0;i<5;i++){

@@ -18,6 +18,15 @@ contract taxEngine is taxEngineData,safeTransfer {
     function setInterestInfo(uint256 _interestRate,uint256 _interestInterval)external onlyOrigin{
         _setInterestInfo(_interestRate,_interestInterval);
     }
+    function getCollateralLeft(address account) external view returns (uint256){
+        uint256 assetAndInterest =getAssetBalance(account).mul(collateralRate);
+        uint256 collateralPrice = oraclePrice(collateralToken);
+        uint256 allCollateral = collateralBalances[account].mul(collateralPrice);
+        if (allCollateral > assetAndInterest){
+            return (allCollateral - assetAndInterest)/calDecimals;
+        }
+        return 0;
+    }
     function canLiquidate(address account) external view returns (bool){
         uint256 assetAndInterest =getAssetBalance(account);
         uint256 collateralPrice = oraclePrice(collateralToken);
@@ -25,8 +34,6 @@ contract taxEngine is taxEngineData,safeTransfer {
         return assetAndInterest.mul(collateralRate)>allCollateral;
     }
     function checkLiquidate(address account,uint256 removeCollateral,uint256 newMint) internal returns(bool){
-        _interestSettlement();
-        settleUserInterest(account);
         uint256 collateralPrice = oraclePrice(collateralToken);
         uint256 allCollateral = (collateralBalances[account].sub(removeCollateral)).mul(collateralPrice);
         uint256 assetAndInterest = assetInfoMap[account].assetAndInterest.add(newMint);

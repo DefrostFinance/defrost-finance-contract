@@ -23,7 +23,7 @@ contract taxEngineData is Halt,versionUpdater,oneBlockLimit,ImportOracle,interes
     mapping(address=>uint256) public collateralBalances;
     
     address public collateralToken;
-    address public interestPool;
+    address public reservePool;
     ISystemToken public systemToken;
 
     event MintSystemCoin(address indexed sender,address indexed account,uint256 amount);
