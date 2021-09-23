@@ -54,10 +54,10 @@ contract collateralVault is taxEngine {
         _redeem(account,collateralToken,amount);
         emit Exit(msg.sender, account, amount);
     }
-    function getMaxBorrowAmount(address account) external view returns(uint256){
+    function getMaxBorrowAmount(address account,uint256 newAddCollateral) external view returns(uint256){
         uint256 allDebt =getAssetBalance(account);
         uint256 collateralPrice = oraclePrice(collateralToken);
-        uint256 newMint = collateralBalances[account].mul(collateralPrice)/collateralRate;
+        uint256 newMint = collateralBalances[account].add(newAddCollateral).mul(collateralPrice)/collateralRate;
         if (newMint>allDebt){
             return newMint - allDebt;
         }
