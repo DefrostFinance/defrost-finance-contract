@@ -1,7 +1,7 @@
 pragma solidity =0.5.16;
 import "../PhoenixModules/proxyModules/versionUpdater.sol";
 contract defrostFactoryData is versionUpdater{
-    uint256 constant internal currentVersion = 1;
+    uint256 constant internal currentVersion = 2;
     function implementationVersion() public pure returns (uint256) 
     {
         return currentVersion;

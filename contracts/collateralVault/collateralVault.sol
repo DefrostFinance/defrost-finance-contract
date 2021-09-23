@@ -72,7 +72,7 @@ contract collateralVault is taxEngine {
         addAsset(msg.sender,amount);
         emit MintSystemCoin(msg.sender,account,amount);
     }
-    function jionAndMint(uint256 collateralamount, uint256 systemCoinAmount)payable notHalted OneBlockLimit(msg.sender) settleAccount(msg.sender) external{
+    function joinAndMint(uint256 collateralamount, uint256 systemCoinAmount)payable notHalted OneBlockLimit(msg.sender) settleAccount(msg.sender) external{
         _join(msg.sender,collateralamount);
         _mintSystemCoin(msg.sender,systemCoinAmount);
     }

@@ -6,7 +6,7 @@ import "../PhoenixModules/interface/IPHXOracle.sol";
 import "../interestEngine/ISystemToken.sol";
 import "../interestEngine/interestEngine.sol";
 contract taxEngineData is Halt,versionUpdater,oneBlockLimit,ImportOracle,interestEngine {
-    uint256 constant internal currentVersion = 1;
+    uint256 constant internal currentVersion = 3;
     function implementationVersion() public pure returns (uint256) 
     {
         return currentVersion;

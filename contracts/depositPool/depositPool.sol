@@ -31,12 +31,15 @@ contract depositPool is depositPoolData {
     function setInterestInfo(uint256 _interestRate,uint256 _interestInterval)external onlyOrigin{
         _setInterestInfo(_interestRate,_interestInterval);
     }
-    function depositSystemCoin(address account, uint256 amount) notHalted OneBlockLimit(msg.sender) external{
+    function depositSystemCoin(address account, uint256 amount) notHalted OneBlockLimit(msg.sender) settleAccount(msg.sender) external{
         require(systemToken.transferFrom(msg.sender, address(this), amount),"systemToken : transferFrom failed!");
         addAsset(account,amount);
         emit Deposit(msg.sender,account,amount);
     }
-    function withdrawSystemCoin(address account, uint256 amount) notHalted OneBlockLimit(msg.sender) external{
+    function withdrawSystemCoin(address account, uint256 amount) notHalted OneBlockLimit(msg.sender) settleAccount(msg.sender) external{
+        if(amount == uint256(-1)){
+            amount = assetInfoMap[account].assetAndInterest;
+        }
         subAsset(msg.sender,amount);
         require(systemToken.transfer(account, amount),"systemToken : transfer failed!");
         emit Withdraw(msg.sender,account,amount);
