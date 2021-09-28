@@ -1,22 +1,17 @@
-pragma solidity =0.5.16;
-import "../PhoenixModules/modules/whiteListAddress.sol";
-import "../PhoenixModules/modules/ReentrancyGuard.sol";
-import "../PhoenixModules/proxyModules/versionUpdater.sol";
-import "../PhoenixModules/proxyModules/proxyOperator.sol";
-import "../PhoenixModules/modules/safeTransfer.sol";
-import "../PhoenixModules/proxyModules/Halt.sol";
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.7.0;
+import "../modules/whiteListAddress.sol";
+import "../modules/ReentrancyGuard.sol";
+import "../modules/proxyOperator.sol";
+import "../modules/safeTransfer.sol";
+import "../modules/Halt.sol";
 /**
  * @title systemCoin mine pool, which manager contract is systemCoin.
  * @dev A smart-contract which distribute some mine coins by systemCoin balance.
  *
  */
-contract MinePoolData is versionUpdater,Halt,proxyOperator,safeTransfer,ReentrancyGuard {
-    uint256 constant internal currentVersion = 1;
-    function implementationVersion() public pure returns (uint256) 
-    {
-        return currentVersion;
-    }
-    using whiteListAddress for address[];
+abstract contract MinePoolData is Halt,proxyOperator,safeTransfer,ReentrancyGuard {
+    
     // The eligible adress list
     address[] internal whiteList;
     //Special decimals for calculation
@@ -40,8 +35,11 @@ contract MinePoolData is versionUpdater,Halt,proxyOperator,safeTransfer,Reentran
     //distributed time interval
     mapping(address=>uint256) internal mineInterval;
 
+    mapping(address=>uint256) internal distributeBalance;
+    uint256 internal _totalsupply;
+
     event SetMineCoinInfo(address indexed from,address indexed mineCoin,uint256 _mineAmount,uint256 _mineInterval);
     event TranserMiner(address indexed from, address indexed to);
-    event ChangeUserbalance(address indexed Account);
+    event ChangeUserbalance(address indexed Account,int256 amount);
     event RedeemMineCoin(address indexed from, address indexed mineCoin, uint256 value);    
 }

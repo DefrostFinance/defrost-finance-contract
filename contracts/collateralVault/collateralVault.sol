@@ -1,26 +1,26 @@
-pragma solidity =0.5.16;
-import "./taxEngine.sol";
-contract collateralVault is taxEngine {
-    constructor (address multiSignature) proxyOwner(multiSignature) public{
-    }
-    function update() public versionUpdate {
-    }
-    function initContract(bytes32 _vaultID,address _collateralToken,address _reservePool,address _systemToken,address _dsOracle,
-        uint256 _stabilityFee,uint256 _feeInterval,uint256 _assetCeiling,uint256 _assetFloor,
-        uint256 _collateralRate,uint256 _liquidationReward,uint256 _liquidationPunish)external onlyOwner{
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.7.0;
+import "./vaultEngine.sol";
+contract collateralVault is vaultEngine {
+    using SafeMath for uint256;
+    using SafeERC20 for IERC20;
+    constructor (address multiSignature,bytes32 _vaultID,address _collateralToken,address _reservePool,address _systemCoin,address _dsOracle) proxyOwner(multiSignature){
         vaultID = _vaultID;
         collateralToken = _collateralToken;
         reservePool = _reservePool;
-        systemToken = ISystemToken(_systemToken);
-        _oracle = IPHXOracle(_dsOracle);
+        systemCoin = ISystemCoin(_systemCoin);
+        _oracle = IDSOracle(_dsOracle);
+    }
+    function initContract(uint256 _stabilityFee,uint256 _feeInterval,uint256 _assetCeiling,uint256 _assetFloor,
+        uint256 _collateralRate,uint256 _liquidationReward,uint256 _liquidationPenalty)external onlyOwner{
         interestRate = _stabilityFee;
         interestInterval = _feeInterval;
         assetCeiling = _assetCeiling;
         assetFloor = _assetFloor;
         collateralRate = _collateralRate;
         liquidationReward = _liquidationReward;
-        liquidationPunish = _liquidationPunish;
-        latestSettleTime = now;
+        liquidationPenalty = _liquidationPenalty;
+        latestSettleTime = block.timestamp;
         accumulatedRate = rayDecimals;
     }
     /**
@@ -32,7 +32,7 @@ contract collateralVault is taxEngine {
     * @param amount Amount of collateral to transfer in the system
     **/
 
-    function join(address account, uint256 amount) notHalted OneBlockLimit(msg.sender) payable external {
+    function join(address account, uint256 amount) notHalted payable external {
         _join(account,amount);
     }
     function _join(address account, uint256 amount) internal {
@@ -48,7 +48,7 @@ contract collateralVault is taxEngine {
     * @param account Account to which we transfer the collateral
     * @param amount Amount of collateral to transfer to 'account'
     **/
-    function exit(address account, uint256 amount) notHalted OneBlockLimit(msg.sender) settleAccount(msg.sender) external {
+    function exit(address account, uint256 amount) notHalted settleAccount(msg.sender) external {
         require(checkLiquidate(msg.sender,0,amount),"collateral remove overflow!");
         collateralBalances[msg.sender] = collateralBalances[msg.sender].sub(amount);
         _redeem(account,collateralToken,amount);
@@ -63,20 +63,20 @@ contract collateralVault is taxEngine {
         }
         return 0;
     }
-    function mintSystemCoin(address account, uint256 amount) notHalted OneBlockLimit(msg.sender) external{
+    function mintSystemCoin(address account, uint256 amount) notHalted external{
         _mintSystemCoin(account,amount);
     }
     function _mintSystemCoin(address account, uint256 amount) settleAccount(msg.sender) internal{
         require(checkLiquidate(msg.sender,0,amount),"overflow liquidation limit!");
-        systemToken.mint(account,amount);
+        systemCoin.mint(account,amount);
         addAsset(msg.sender,amount);
         emit MintSystemCoin(msg.sender,account,amount);
     }
-    function joinAndMint(uint256 collateralamount, uint256 systemCoinAmount)payable notHalted OneBlockLimit(msg.sender) settleAccount(msg.sender) external{
+    function joinAndMint(uint256 collateralamount, uint256 systemCoinAmount)payable notHalted settleAccount(msg.sender) external{
         _join(msg.sender,collateralamount);
         _mintSystemCoin(msg.sender,systemCoinAmount);
     }
-    function repaySystemCoin(address account, uint256 amount) notHalted OneBlockLimit(msg.sender) settleAccount(account) external{
+    function repaySystemCoin(address account, uint256 amount) notHalted settleAccount(account) external{
         if(amount == uint256(-1)){
             amount = assetInfoMap[account].assetAndInterest;
         }
@@ -85,8 +85,8 @@ contract collateralVault is taxEngine {
     }
     function _repaySystemCoin(address account, uint256 amount) internal{
         uint256 _repayDebt = subAsset(account,amount);
-        require(systemToken.transferFrom(msg.sender, reservePool, amount.sub(_repayDebt)),"systemToken : transferFrom failed!");
-        systemToken.burn(msg.sender,_repayDebt);
+        require(systemCoin.transferFrom(msg.sender, reservePool, amount.sub(_repayDebt)),"systemCoin : transferFrom failed!");
+        systemCoin.burn(msg.sender,_repayDebt);
         emit RepaySystemCoin(msg.sender,account,amount);
     }
     function liquidate(address account) notHalted settleAccount(account) external{        
@@ -94,8 +94,8 @@ contract collateralVault is taxEngine {
         uint256 collateralPrice = oraclePrice(collateralToken);
         uint256 collateral = collateralBalances[account];
         uint256 allDebt = assetInfoMap[account].assetAndInterest;
-        uint256 punish = allDebt.mul(liquidationPunish)/calDecimals;
-        IERC20 oToken = IERC20(address(systemToken));
+        uint256 punish = allDebt.mul(liquidationPenalty)/calDecimals;
+        IERC20 oToken = IERC20(address(systemCoin));
         _repaySystemCoin(account,allDebt);
         oToken.safeTransferFrom(msg.sender, reservePool, punish);
         allDebt += punish;

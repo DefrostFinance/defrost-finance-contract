@@ -1,14 +1,10 @@
-pragma solidity =0.5.16;
-import "../PhoenixModules/proxyModules/versionUpdater.sol";
-import "../interestEngine/ISystemToken.sol";
-import "../DeFrostFactory/IDefrostFactory.sol";
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.7.0;
+import "../modules/proxyOwner.sol";
+import "../interface/ISystemCoin.sol";
+import "../interface/IDefrostFactory.sol";
 
-contract defrostHelperData is versionUpdater {
-    uint256 constant internal currentVersion = 1;
-    function implementationVersion() public pure returns (uint256) 
-    {
-        return currentVersion;
-    }
-    ISystemToken public systemToken;
+abstract contract defrostHelperData is proxyOwner {
+    ISystemCoin public systemCoin;
     IDefrostFactory public defrostFactory;
 }

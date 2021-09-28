@@ -1,10 +1,15 @@
-pragma solidity >=0.4.21 <0.7.0;
+/**
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ * defrost
+ * Copyright (C) 2020 defrost Options Protocol
+ */
+pragma solidity ^0.7.0;
 
 contract Migrations {
   address public owner;
   uint public last_completed_migration;
 
-  constructor() public {
+  constructor()  {
     owner = msg.sender;
   }
 

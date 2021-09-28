@@ -1,4 +1,5 @@
-pragma solidity =0.5.16;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.7.0;
 import "./interestEngine.sol";
 /**
  * @title interest engine.
@@ -6,7 +7,8 @@ import "./interestEngine.sol";
  *
  */
 contract interestEngineLinear is interestEngine{
-    function getAssetBalance(address account)public view returns(uint256){
+    using SafeMath for uint256;
+    function getAssetBalance(address account)public override view returns(uint256){
         if(assetInfoMap[account].interestRateOrigin == 0 || interestInterval == 0){
             return 0;
         }
@@ -14,15 +16,15 @@ contract interestEngineLinear is interestEngine{
         return assetInfoMap[account].assetAndInterest.add(
             assetInfoMap[account].originAsset.mul(newRate.sub(assetInfoMap[account].interestRateOrigin)));
     }
-    function _settlement(address account)internal view returns (uint256) {
+    function _settlement(address account)internal override view returns (uint256) {
         if (assetInfoMap[account].interestRateOrigin == 0){
             return 0;
         }
         return assetInfoMap[account].assetAndInterest.add(
             assetInfoMap[account].originAsset.mul(accumulatedRate.sub(assetInfoMap[account].interestRateOrigin)));
     }
-    function newAccumulatedRate()internal view returns (uint256){
-        uint256 newRate = interestRate.mul((now-latestSettleTime)/interestInterval);
+    function newAccumulatedRate()internal override view returns (uint256){
+        uint256 newRate = interestRate.mul((block.timestamp-latestSettleTime)/interestInterval);
         return accumulatedRate.add(newRate);
     }
 }

@@ -1,5 +1,6 @@
-pragma solidity =0.5.16;
-import "../PhoenixModules/modules/SafeMath.sol";
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.7.0;
+import "../modules/SafeMath.sol";
 /**
  * @title interest engine.
  * @dev calculate interest by assets,compounded interest.
@@ -55,7 +56,7 @@ contract interestEngine{
         interestInterval = _interestInterval;
         emit SetInterestInfo(msg.sender,_interestRate,_interestInterval);
     }
-    function getAssetBalance(address account)public view returns(uint256){
+    function getAssetBalance(address account)public virtual view returns(uint256){
         if(assetInfoMap[account].interestRateOrigin == 0 || interestInterval == 0){
             return 0;
         }
@@ -133,13 +134,13 @@ contract interestEngine{
             uint256 newRate = newAccumulatedRate();
             totalAssetAmount = totalAssetAmount.mul(newRate)/accumulatedRate;
             accumulatedRate = newRate;
-            latestSettleTime = now/_interestInterval*_interestInterval;
+            latestSettleTime = block.timestamp/_interestInterval*_interestInterval;
         }else{
-            latestSettleTime = now;
+            latestSettleTime = block.timestamp;
         }
     }
-    function newAccumulatedRate()internal view returns (uint256){
-        uint256 newRate = rpower(rayDecimals+interestRate,(now-latestSettleTime)/interestInterval,rayDecimals);
+    function newAccumulatedRate()internal virtual view returns (uint256){
+        uint256 newRate = rpower(rayDecimals+interestRate,(block.timestamp-latestSettleTime)/interestInterval,rayDecimals);
         return accumulatedRate.mul(newRate)/rayDecimals;
     }
     /**
@@ -154,7 +155,7 @@ contract interestEngine{
      * @dev subfunction, settle user's latest tax amount.
      * @param account user's account
      */
-    function _settlement(address account)internal view returns (uint256) {
+    function _settlement(address account)internal virtual view returns (uint256) {
         if (assetInfoMap[account].interestRateOrigin == 0){
             return 0;
         }

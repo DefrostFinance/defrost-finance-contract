@@ -19,7 +19,7 @@ contract('collateralVault', function (accounts){
         let ray = new BN(1e15);
         ray = ray.mul(new BN(1e9));
         vaults = await defrostFactory.createCollateralVault(factory,accounts[0],accounts,"ETH-2",eth,bigNum,
-            "1000000000000000000","1200000000000000000",ray,1);
+            "1000000000000000000","1200000000000000000",ray,1,);
     }); 
     it('collateralVault normal tests', async function (){
         let price = new BN(1e15);
@@ -36,21 +36,18 @@ contract('collateralVault', function (accounts){
         console.log("collateralRate",result.toString());
         result = await vaults.vaultPool.liquidationReward();
         console.log("liquidationReward",result.toString());
-        result = await vaults.vaultPool.liquidationPunish();
-        console.log("liquidationPunish",result.toString());
+        result = await vaults.vaultPool.liquidationPenalty();
+        console.log("liquidationPenalty",result.toString());
 
         result = await vaults.vaultPool.getInterestInfo();
         console.log("getInterestInfo",result[0].toString(),result[1].toString());
 
         result = await vaults.vaultPool.collateralToken();
         console.log("collateralToken",result);
-        result = await vaults.vaultPool.taxPool();
-        console.log("taxPool",result);
-        result = await vaults.vaultPool.systemToken();
-        console.log("systemToken",result);
-
-        result = await vaults.vaultPool.systemToken();
-        console.log("systemToken",result);
+        result = await vaults.vaultPool.reservePool();
+        console.log("reservePool",result);
+        result = await vaults.vaultPool.systemCoin();
+        console.log("systemCoin",result);
         result = await vaults.vaultPool.vaultID();
         console.log("vaultID",result);
     });

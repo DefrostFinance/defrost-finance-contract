@@ -1,6 +1,7 @@
-pragma solidity =0.5.16;
+// SPDX-License-Identifier: GPL-3.0-or-later
+pragma solidity ^0.7.0;
 import "./MinePoolData.sol";
-import "../PhoenixModules/modules/SafeMath.sol";
+import "../modules/SafeMath.sol";
 /**
  * @title systemCoin mine pool, which manager contract is systemCoin.
  * @dev A smart-contract which distribute some mine coins by systemCoin balance.
@@ -8,14 +9,14 @@ import "../PhoenixModules/modules/SafeMath.sol";
  */
 contract coinMinePool is MinePoolData {
     using SafeMath for uint256;
-    constructor (address multiSignature) proxyOwner(multiSignature) public{
-    }
-    function update() public versionUpdate {
+    using whiteListAddress for address[];
+    constructor (address multiSignature,address systemCoin) proxyOwner(multiSignature) {
+        _operators[managerIndex] = systemCoin;
     }
     /**
      * @dev default function for foundation input miner coins.
      */
-    function()external payable{
+    receive()external payable{
 
     }
     /**
@@ -35,7 +36,7 @@ contract coinMinePool is MinePoolData {
         uint256 _mineInterval = mineInterval[mineCoin];
         if (_totalSupply > 0 && _mineInterval>0){
             uint256 _mineAmount = mineAmount[mineCoin];
-            uint256 latestMined = _mineAmount.mul(now-latestSettleTime[mineCoin])/_mineInterval;
+            uint256 latestMined = _mineAmount.mul(block.timestamp-latestSettleTime[mineCoin])/_mineInterval;
             return totalMinedCoin[mineCoin].add(latestMined);
         }
         return totalMinedCoin[mineCoin];
@@ -77,26 +78,38 @@ contract coinMinePool is MinePoolData {
         whiteList.addWhiteListAddress(mineCoin);
         emit SetMineCoinInfo(msg.sender,mineCoin,_mineAmount,_mineInterval);
     }
-
+     /*
     /**
      * @dev transfer mineCoin to recieptor when account transfer amount FPTCoin to recieptor, only manager contract can modify database.
      * @param account the account transfer from
      * @param recieptor the account transfer to
      */
+     /*
     function transferMinerCoin(address account,address recieptor) public onlyManager {
         _globalSettlementAll();
         _userSettlementAll(account);
         _userSettlementAll(recieptor);
         emit TranserMiner(account,recieptor);
     }
+    */
     /**
      * @dev mint mineCoin to account when account add collateral to collateral pool, only manager contract can modify database.
      * @param account user's account
      */
-    function changeUserbalance(address account) public onlyManager {
+    function changeUserbalance(address account,int256 amount) public onlyManager {
         _globalSettlementAll();
         _userSettlementAll(account);
-        emit ChangeUserbalance(account);
+        _changeBalance(account,amount);
+        emit ChangeUserbalance(account,amount);
+    }
+    function _changeBalance(address account,int256 amount)internal{
+        if (amount >= 0){
+            distributeBalance[account] = distributeBalance[account].add(uint256(amount)); 
+            _totalsupply = _totalsupply.add(uint256(amount)); 
+        }else{
+            distributeBalance[account] = distributeBalance[account].sub(uint256(-amount)); 
+            _totalsupply = _totalsupply.sub(uint256(-amount));
+        }
     }
     /**
      * @dev user redeem mine rewards.
@@ -128,12 +141,12 @@ contract coinMinePool is MinePoolData {
         uint256 _totalSupply = totalSupply();
         if (_totalSupply > 0 && _mineInterval>0){
             uint256 _mineAmount = mineAmount[mineCoin];
-            uint256 mintTime = (now-latestSettleTime[mineCoin])/_mineInterval;
+            uint256 mintTime = (block.timestamp-latestSettleTime[mineCoin])/_mineInterval;
             uint256 latestMined = _mineAmount*mintTime;
             mineNetworth[mineCoin] = mineNetworth[mineCoin].add(latestMined.mul(rayDecimals)/_totalSupply);
-            latestSettleTime[mineCoin] = now/_mineInterval*_mineInterval;
+            latestSettleTime[mineCoin] = block.timestamp/_mineInterval*_mineInterval;
         }else{
-            latestSettleTime[mineCoin] = now;
+            latestSettleTime[mineCoin] = block.timestamp;
         }
     }
     /**
@@ -144,7 +157,7 @@ contract coinMinePool is MinePoolData {
         uint256 _totalSupply = totalSupply();
         if (_totalSupply > 0 && _mineInterval>0){
             uint256 _mineAmount = mineAmount[mineCoin];
-            uint256 mintTime = (now-latestSettleTime[mineCoin])/_mineInterval;
+            uint256 mintTime = (block.timestamp-latestSettleTime[mineCoin])/_mineInterval;
             uint256 latestMined = _mineAmount*mintTime;
             return latestMined;
         }
@@ -195,14 +208,18 @@ contract coinMinePool is MinePoolData {
      * @dev get FPTCoin's total supply.
      */
     function totalSupply()internal view returns(uint256){
-        IERC20 _Coin = IERC20(_operators[managerIndex]);
-        return _Coin.totalSupply();
+        return _totalsupply;
+//        IERC20 _Coin = IERC20(_operators[managerIndex]);
+//        return _Coin.totalSupply();
     }
     /**
      * @dev get FPTCoin's user balance.
      */
     function balanceOf(address account)internal view returns(uint256){
+        return distributeBalance[account];
+        /*
         IERC20 _Coin = IERC20(_operators[managerIndex]);
         return _Coin.balanceOf(account);
+        */
     }
 }
