@@ -22,6 +22,9 @@ contract collateralVault is vaultEngine {
         _setInterestInfo(_stabilityFee,_feeInterval,12e26,8e26);
         _setLiquidationInfo(_liquidationReward,_liquidationPenalty);
     }
+    function setEmergency()external isHalted onlyOrigin{
+        emergency = true;
+    }
     function setLiquidationInfo(uint256 _liquidationReward,uint256 _liquidationPenalty)external onlyOrigin{
         _setLiquidationInfo(_liquidationReward,_liquidationPenalty);
     }
@@ -64,6 +67,13 @@ contract collateralVault is vaultEngine {
         collateralBalances[msg.sender] = collateralBalances[msg.sender].sub(amount);
         _redeem(account,collateralToken,amount);
         emit Exit(msg.sender, account, amount);
+    }
+    function emergencyExit(address account) isHalted nonReentrant external{
+        require(emergency,"This contract is not at emergency state");
+        uint256 amount = collateralBalances[msg.sender];
+        _redeem(account,collateralToken,amount);
+        collateralBalances[msg.sender] = 0;
+        emit EmergencyExit(msg.sender, account, amount);
     }
     function getMaxBorrowAmount(address account,uint256 newAddCollateral) external view returns(uint256){
         uint256 allDebt =getAssetBalance(account);
@@ -118,7 +128,6 @@ contract collateralVault is vaultEngine {
         _payback = _payback <= collateral ? _payback : collateral;
         collateralBalances[account] = collateralBalances[account].sub(_payback);
         _redeem(msg.sender,collateralToken,_payback);
-        emit Liquidate(msg.sender,account,collateralToken,allDebt,punish,_payback);
-        
+        emit Liquidate(msg.sender,account,collateralToken,allDebt,punish,_payback);  
     }
 }

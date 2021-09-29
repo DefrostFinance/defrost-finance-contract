@@ -6,6 +6,7 @@ import "../interface/ISystemCoin.sol";
 import "../interestEngine/interestEngine.sol";
 import "../modules/ReentrancyGuard.sol";
 abstract contract vaultEngineData is Halt,ImportOracle,ReentrancyGuard,interestEngine {
+    bool public emergency = false;
     bytes32 public vaultID;
     //Special decimals for calculation
     uint256 constant calDecimals = 1e18;
@@ -27,4 +28,5 @@ abstract contract vaultEngineData is Halt,ImportOracle,ReentrancyGuard,interestE
         uint256 debt,uint256 punishment,uint256 amount);
     event Join(address indexed sender, address indexed account, uint256 amount);
     event Exit(address indexed sender, address indexed account, uint256 amount);
+    event EmergencyExit(address indexed sender, address indexed account, uint256 amount);
 }
