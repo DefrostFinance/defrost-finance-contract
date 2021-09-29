@@ -15,7 +15,7 @@ contract defrostFactory is defrostFactoryData {
         dsOracle = _dsOracle;
     }
     function createVault(bytes32 vaultID,address collateral,uint256 debtCeiling,uint256 debtFloor,uint256 collateralRate,
-    uint256 stabilityFee,uint256 feeInterval,uint256 liquidationReward,uint256 liquidationPenalty)external onlyOrigin returns(address){
+    int256 stabilityFee,uint256 feeInterval,uint256 liquidationReward,uint256 liquidationPenalty)external onlyOrigin returns(address){
         address vaultAddress = getVault(vaultID);
         require(vaultAddress == address(0),"this vault is already created!");
         return createVaultPool(vaultID,collateral,debtCeiling,debtFloor,collateralRate,
@@ -28,7 +28,7 @@ contract defrostFactory is defrostFactoryData {
         return allVaults;
     }
     function createVaultPool(bytes32 vaultID,address collateral,uint256 debtCeiling,uint256 debtFloor,uint256 collateralRate,
-    uint256 stabilityFee,uint256 feeInterval,uint256 liquidationReward,uint256 liquidationPenalty)internal returns(address){
+    int256 stabilityFee,uint256 feeInterval,uint256 liquidationReward,uint256 liquidationPenalty)internal returns(address){
         collateralVault vaultPool = new collateralVault(getMultiSignatureAddress(),vaultID,collateral,reservePool,systemCoin,dsOracle);
         vaultPool.initContract(stabilityFee,feeInterval,debtCeiling,debtFloor,collateralRate,liquidationReward,liquidationPenalty);
         Authorization(systemCoin).addAuthorization(address(vaultPool));

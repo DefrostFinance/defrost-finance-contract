@@ -16,8 +16,8 @@ abstract contract vaultEngine is vaultEngineData,safeTransfer {
     receive()external payable{
 
     }
-    function setInterestInfo(uint256 _interestRate,uint256 _interestInterval)external onlyOrigin{
-        _setInterestInfo(_interestRate,_interestInterval);
+    function setStabilityFee(int256 stabilityFee,uint256 feeInterval)external onlyOrigin{
+        _setInterestInfo(stabilityFee,feeInterval,12e26,8e26);
     }
     function getCollateralLeft(address account) external view returns (uint256){
         uint256 assetAndInterest =getAssetBalance(account).mul(collateralRate);

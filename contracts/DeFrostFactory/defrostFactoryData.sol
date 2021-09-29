@@ -10,7 +10,5 @@ abstract contract defrostFactoryData is proxyOwner{
     address public dsOracle;
 
     event CreateVaultPool(address indexed poolAddress,bytes32 indexed vaultID,address indexed collateral,uint256 debtCeiling,uint256 debtFloor,uint256 collateralRate,
-    uint256 taxRate,uint256 taxInterval);
-    event CreateSystemCoinMinePool(address indexed poolAddress);
-
+    int256 stabilityFee,uint256 feeInterval);
 }

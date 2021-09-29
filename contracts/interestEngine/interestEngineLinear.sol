@@ -24,7 +24,12 @@ contract interestEngineLinear is interestEngine{
             assetInfoMap[account].originAsset.mul(accumulatedRate.sub(assetInfoMap[account].interestRateOrigin)));
     }
     function newAccumulatedRate()internal override view returns (uint256){
-        uint256 newRate = interestRate.mul((block.timestamp-latestSettleTime)/interestInterval);
-        return accumulatedRate.add(newRate);
+        int256 newRate = interestRate*(int256((block.timestamp-latestSettleTime)/interestInterval));
+        if (newRate>=0){
+            return accumulatedRate.add(uint256(newRate));
+        }else{
+            require(accumulatedRate>=uint256(-newRate),"Interest Engine : interest rate overflow!");
+            return accumulatedRate - uint256(-newRate);
+        }
     }
 }

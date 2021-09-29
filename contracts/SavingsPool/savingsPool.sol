@@ -17,21 +17,23 @@ contract savingsPool is savingsPoolData {
      */
     constructor (address multiSignature) proxyOwner(multiSignature) {
     }
-    function initContract(address _systemCoin,uint256 _interestRate,uint256 _interestInterval,
+    function initContract(address _systemCoin,int256 _interestRate,uint256 _interestInterval,
         uint256 _assetCeiling,uint256 _assetFloor)external originOnce{
         systemCoin = ISystemCoin(_systemCoin);
-        interestRate = _interestRate;
-        interestInterval = _interestInterval;
         assetCeiling = _assetCeiling;
         assetFloor = _assetFloor;
-        latestSettleTime = block.timestamp;
-        accumulatedRate = rayDecimals;
+        _setInterestInfo(_interestRate,_interestInterval,12e26,rayDecimals);
+
     }
     receive()external payable{
         require(false);
     }
-    function setInterestInfo(uint256 _interestRate,uint256 _interestInterval)external onlyOrigin{
-        _setInterestInfo(_interestRate,_interestInterval);
+    function setPoolLimitation(uint256 _assetCeiling,uint256 _assetFloor)external onlyOrigin{
+        assetCeiling = _assetCeiling;
+        assetFloor = _assetFloor;
+    }
+    function setInterestInfo(int256 _interestRate,uint256 _interestInterval)external onlyOrigin{
+        _setInterestInfo(_interestRate,_interestInterval,12e26,rayDecimals);
     }
     function saveSystemCoin(address account, uint256 amount) notHalted nonReentrant settleAccount(msg.sender) external{
         require(systemCoin.transferFrom(msg.sender, address(this), amount),"systemCoin : transferFrom failed!");

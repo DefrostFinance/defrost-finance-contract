@@ -4,7 +4,8 @@ import "../modules/Halt.sol";
 import "../interface/IDSOracle.sol";
 import "../interface/ISystemCoin.sol";
 import "../interestEngine/interestEngine.sol";
-abstract contract vaultEngineData is Halt,ImportOracle,interestEngine {
+import "../modules/ReentrancyGuard.sol";
+abstract contract vaultEngineData is Halt,ImportOracle,ReentrancyGuard,interestEngine {
     bytes32 public vaultID;
     //Special decimals for calculation
     uint256 constant calDecimals = 1e18;
