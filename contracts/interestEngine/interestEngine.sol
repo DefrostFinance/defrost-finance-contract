@@ -55,7 +55,7 @@ contract interestEngine{
         require(_interestRate<=1e27 && _interestRate>=-1e27,"input stability fee is too large");
         require(_interestInterval>0,"input mine Interval must larger than zero");
         uint256 newLimit = rpower(uint256(1e27+_interestRate),31536000/_interestInterval,rayDecimals);
-        require(newLimit<=maxRate && newLimit>=minRate,"input stability fee is too large");
+        require(newLimit<=maxRate && newLimit>=minRate,"input stability fee is out of range");
         _interestSettlement();
         interestRate = _interestRate;
         interestInterval = _interestInterval;

@@ -29,7 +29,7 @@ contract collateralVault is vaultEngine {
         _setLiquidationInfo(_liquidationReward,_liquidationPenalty);
     }
     function _setLiquidationInfo(uint256 _liquidationReward,uint256 _liquidationPenalty)internal {
-        require(liquidationPenalty<= _liquidationReward && _liquidationReward <= calDecimals+collateralRate,"Collateral Vault : Liquidate setting overflow!");
+        require(_liquidationPenalty<= _liquidationReward && _liquidationReward <= collateralRate-calDecimals,"Collateral Vault : Liquidate setting overflow!");
         liquidationReward = _liquidationReward;
         liquidationPenalty = _liquidationPenalty; 
         emit SetLiquidationInfo(msg.sender,_liquidationReward,_liquidationPenalty);
@@ -121,15 +121,15 @@ contract collateralVault is vaultEngine {
         uint256 collateralPrice = oraclePrice(collateralToken);
         uint256 collateral = collateralBalances[account];
         uint256 allDebt = assetInfoMap[account].assetAndInterest;
-        uint256 punish = allDebt.mul(liquidationPenalty)/calDecimals;
+        uint256 penalty = allDebt.mul(liquidationPenalty)/calDecimals;
         IERC20 oToken = IERC20(address(systemCoin));
         _repaySystemCoin(account,allDebt);
-        oToken.safeTransferFrom(msg.sender, reservePool, punish);
-        allDebt += punish;
+        oToken.safeTransferFrom(msg.sender, reservePool, penalty);
+        allDebt += penalty;
         uint256 _payback = allDebt.mul(calDecimals+liquidationReward)/collateralPrice;
         _payback = _payback <= collateral ? _payback : collateral;
         collateralBalances[account] = collateralBalances[account].sub(_payback);
         _redeem(msg.sender,collateralToken,_payback);
-        emit Liquidate(msg.sender,account,collateralToken,allDebt,punish,_payback);  
+        emit Liquidate(msg.sender,account,collateralToken,allDebt,penalty,_payback);  
     }
 }
