@@ -28,7 +28,7 @@ contract defrostFactory is defrostFactoryData {
         return allVaults;
     }
     function createVaultPool(bytes32 vaultID,address collateral,uint256 debtCeiling,uint256 debtFloor,uint256 collateralRate,
-    int256 stabilityFee,uint256 feeInterval,uint256 liquidationReward,uint256 liquidationPenalty)internal returns(address){
+    int256 stabilityFee,uint256 feeInterval,uint256 liquidationReward,uint256 liquidationPenalty)internal virtual returns(address){
         collateralVault vaultPool = new collateralVault(getMultiSignatureAddress(),vaultID,collateral,reservePool,systemCoin,dsOracle);
         vaultPool.initContract(stabilityFee,feeInterval,debtCeiling,debtFloor,collateralRate,liquidationReward,liquidationPenalty);
         Authorization(systemCoin).addAuthorization(address(vaultPool));

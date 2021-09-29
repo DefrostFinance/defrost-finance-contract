@@ -29,4 +29,6 @@ abstract contract vaultEngineData is Halt,ImportOracle,ReentrancyGuard,interestE
     event Join(address indexed sender, address indexed account, uint256 amount);
     event Exit(address indexed sender, address indexed account, uint256 amount);
     event EmergencyExit(address indexed sender, address indexed account, uint256 amount);
+    event SetLiquidationInfo(address indexed sender,uint256 _liquidationReward,uint256 _liquidationPenalty);
+    event SetPoolLimitation(address indexed sender,uint256 _assetCeiling,uint256 _assetFloor);
 }

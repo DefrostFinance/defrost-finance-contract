@@ -139,13 +139,13 @@ contract interestEngine{
             uint256 newRate = newAccumulatedRate();
             totalAssetAmount = totalAssetAmount.mul(newRate)/accumulatedRate;
             accumulatedRate = newRate;
-            latestSettleTime = block.timestamp/_interestInterval*_interestInterval;
+            latestSettleTime = currentTime()/_interestInterval*_interestInterval;
         }else{
-            latestSettleTime = block.timestamp;
+            latestSettleTime = currentTime();
         }
     }
     function newAccumulatedRate()internal virtual view returns (uint256){
-        uint256 newRate = rpower(uint256(1e27+interestRate),(block.timestamp-latestSettleTime)/interestInterval,rayDecimals);
+        uint256 newRate = rpower(uint256(1e27+interestRate),(currentTime()-latestSettleTime)/interestInterval,rayDecimals);
         return accumulatedRate.mul(newRate)/rayDecimals;
     }
     /**
@@ -170,5 +170,8 @@ contract interestEngine{
         _interestSettlement();
         settleUserInterest(account);
         _;
+    }
+    function currentTime() internal virtual view returns (uint256){
+        return block.timestamp;
     }
 }

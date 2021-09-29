@@ -31,11 +31,13 @@ contract collateralVault is vaultEngine {
     function _setLiquidationInfo(uint256 _liquidationReward,uint256 _liquidationPenalty)internal {
         require(liquidationPenalty<= _liquidationReward && _liquidationReward <= calDecimals+collateralRate,"Collateral Vault : Liquidate setting overflow!");
         liquidationReward = _liquidationReward;
-        liquidationPenalty = _liquidationPenalty;        
+        liquidationPenalty = _liquidationPenalty; 
+        emit SetLiquidationInfo(msg.sender,_liquidationReward,_liquidationPenalty);
     }
     function setPoolLimitation(uint256 _assetCeiling,uint256 _assetFloor)external onlyOrigin{
         assetCeiling = _assetCeiling;
         assetFloor = _assetFloor;
+        emit SetPoolLimitation(msg.sender,_assetCeiling,_assetFloor);
     }
     /**
     * @notice Join collateral in the system

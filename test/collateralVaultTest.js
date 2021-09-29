@@ -17,9 +17,9 @@ contract('collateralVault', function (accounts){
         eventDecoder.initEventsMap([collateralVaultAbi,coinMinePoolAbi,systemCoinAbi]);
         factory = await defrostFactory.createFactory(accounts[0],accounts);
         let ray = new BN(1e15);
-        ray = ray.mul(new BN(1e9));
+        ray = ray.mul(new BN(5e3));
         vaults = await defrostFactory.createCollateralVault(factory,accounts[0],accounts,"ETH-2",eth,bigNum,
-            "1000000000000000000","1200000000000000000",ray,1,);
+            "1000000000000000000","1500000000000000000",ray,1);
     }); 
     it('collateralVault normal tests', async function (){
         let price = new BN(1e15);
