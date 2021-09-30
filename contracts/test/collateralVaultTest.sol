@@ -12,4 +12,7 @@ contract collateralVaultTest is collateralVault {
     function currentTime() internal override view returns (uint256){
         return timer;
     }
+    function getAccumulatedRate()external view returns(uint256){
+        return accumulatedRate;
+    }
 }

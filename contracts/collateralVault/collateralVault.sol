@@ -29,7 +29,9 @@ contract collateralVault is vaultEngine {
         _setLiquidationInfo(_liquidationReward,_liquidationPenalty);
     }
     function _setLiquidationInfo(uint256 _liquidationReward,uint256 _liquidationPenalty)internal {
-        require(_liquidationPenalty<= _liquidationReward && _liquidationReward <= collateralRate-calDecimals,"Collateral Vault : Liquidate setting overflow!");
+        require(_liquidationPenalty<= _liquidationReward && 
+            _liquidationReward <= 5e17 && 
+            _liquidationReward <= collateralRate-calDecimals,"Collateral Vault : Liquidate setting overflow!");
         liquidationReward = _liquidationReward;
         liquidationPenalty = _liquidationPenalty; 
         emit SetLiquidationInfo(msg.sender,_liquidationReward,_liquidationPenalty);
@@ -77,7 +79,7 @@ contract collateralVault is vaultEngine {
         collateralBalances[msg.sender] = 0;
         emit EmergencyExit(msg.sender, account, amount);
     }
-    function getMaxBorrowAmount(address account,uint256 newAddCollateral) external view returns(uint256){
+    function getMaxMintAmount(address account,uint256 newAddCollateral) external view returns(uint256){
         uint256 allDebt =getAssetBalance(account);
         uint256 collateralPrice = oraclePrice(collateralToken);
         uint256 newMint = collateralBalances[account].add(newAddCollateral).mul(collateralPrice)/collateralRate;

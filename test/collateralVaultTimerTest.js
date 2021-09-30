@@ -4,9 +4,11 @@ let eth = "0x0000000000000000000000000000000000000000";
 let collateralVaultAbi = require("../build/contracts/collateralVault.json").abi;
 let systemCoinAbi = require("D:\\work\\solidity\\defrostCoin\\build\\contracts\\systemCoin.json").abi;
 let coinMinePoolAbi = require("../build/contracts/coinMinePool.json").abi;
+const collateralVaultTest = artifacts.require("collateralVaultTest");
 const IERC20 = artifacts.require("IERC20");
 const BN = require("bn.js");
 let bigNum = "1000000000000000000000000000000";
+let ether = new BN("1000000000000000000")
 contract('collateralVault', function (accounts){
     let beforeInfo;
     let factory;
@@ -15,85 +17,52 @@ contract('collateralVault', function (accounts){
         eventDecoder = new eventDecoderClass();
         eventDecoder.initEventsMap([collateralVaultAbi,coinMinePoolAbi,systemCoinAbi]);
         factory = await defrostFactory.createTestFactory(accounts[0],accounts);
+        await factory.oracle.setOperator(3,accounts[1],{from:accounts[0]});
     }); 
-    it('collateralVault normal tests', async function (){
-    });
-    it('collateralVault collateral join tests', async function (){
-        await vaults.vaultPool.join(accounts[1],1e15,{from:accounts[0],value:1e15})
-        let result = await vaults.vaultPool.totalAssetAmount();
-        console.log("totalAssetAmount",result.toString());
-        result = await vaults.vaultPool.collateralBalances(accounts[0]);
-        console.log("collateralBalances accounts[0]",result.toString());
-        result = await vaults.vaultPool.collateralBalances(accounts[1]);
-        console.log("collateralBalances accounts[1]",result.toString());
-        await vaults.vaultPool.exit(accounts[0],1e15,{from:accounts[1]})
-        result = await vaults.vaultPool.totalAssetAmount();
-        console.log("totalAssetAmount",result.toString());
-        result = await vaults.vaultPool.collateralBalances(accounts[0]);
-        console.log("collateralBalances accounts[0]",result.toString());
-        result = await vaults.vaultPool.collateralBalances(accounts[1]);
-        console.log("collateralBalances accounts[1]",result.toString());
-    });
-    it('collateralVault system coin mint tests', async function (){
-        await vaults.vaultPool.join(accounts[1],"1000000000000000000",{from:accounts[0],value:1e15})
-        let result = await vaults.vaultPool.totalAssetAmount();
-        console.log("totalAssetAmount",result.toString());
-        result = await vaults.vaultPool.collateralBalances(accounts[0]);
-        console.log("collateralBalances accounts[0]",result.toString());
-        result = await vaults.vaultPool.collateralBalances(accounts[1]);
-        console.log("collateralBalances accounts[1]",result.toString());
-        await vaults.vaultPool.mintSystemCoin(accounts[0],"10000000000000000000",{from:accounts[1]})
-        await vaults.vaultPool.mintSystemCoin(accounts[0],"10000000000000000000",{from:accounts[1]})
-        console.log("time 0 :",(new Date()).getTime());
-        result = await vaults.vaultPool.totalAssetAmount();
-        console.log("totalAssetAmount",result.toString());
-        result = await vaults.vaultPool.collateralBalances(accounts[0]);
-        console.log("collateralBalances accounts[0]",result.toString());
-        result = await vaults.vaultPool.collateralBalances(accounts[1]);
-        console.log("collateralBalances accounts[1]",result.toString());
-        result = await vaults.vaultPool.getAssetBalance(accounts[0]);
-        console.log("getAssetBalance accounts[0]",result.toString());
-        result = await vaults.vaultPool.getAssetBalance(accounts[1]);
-        console.log("getAssetBalance accounts[1]",result.toString());
-        result = await factory.systemCoin.balanceOf(accounts[0]);
-        console.log("systemCoin Balance accounts[0]",result.toString());
-        result = await factory.systemCoin.balanceOf(accounts[1]);
-        console.log("systemCoin Balance accounts[1]",result.toString());
-        let price = new BN(1e15);
-        price = price.mul(new BN(3000e3));
-        for (var i=0;i<10;i++){
-            await factory.oracle.setPrice(eth,price,{from:accounts[1]});
-        }
-        console.log("time 1 :",(new Date()).getTime());
-        result = await vaults.vaultPool.getAssetBalance(accounts[0]);
-        console.log("getAssetBalance accounts[0]",result.toString());
-        result = await vaults.vaultPool.getAssetBalance(accounts[1]);
-        console.log("getAssetBalance accounts[1]",result.toString());
+    it('collateralVault stability fee normal tests', async function (){
 
-        await factory.systemCoin.approve(vaults.vaultPool.address,"10000000000000000000",{from:accounts[0]});
-        await vaults.vaultPool.repaySystemCoin(accounts[1],"5000000000000000000",{from:accounts[0]})
-        console.log("time 0 :",(new Date()).getTime());
-        result = await vaults.vaultPool.totalAssetAmount();
-        console.log("totalAssetAmount",result.toString());
-        result = await vaults.vaultPool.collateralBalances(accounts[0]);
-        console.log("collateralBalances accounts[0]",result.toString());
-        result = await vaults.vaultPool.collateralBalances(accounts[1]);
-        console.log("collateralBalances accounts[1]",result.toString());
-        result = await vaults.vaultPool.getAssetBalance(accounts[0]);
-        console.log("getAssetBalance accounts[0]",result.toString());
-        result = await vaults.vaultPool.getAssetBalance(accounts[1]);
-        console.log("getAssetBalance accounts[1]",result.toString());
-        result = await factory.systemCoin.balanceOf(accounts[0]);
-        console.log("systemCoin Balance accounts[0]",result.toString());
-        result = await factory.systemCoin.balanceOf(accounts[1]);
-        console.log("systemCoin Balance accounts[1]",result.toString());;
-        for (var i=0;i<10;i++){
-            await factory.oracle.setPrice(eth,price,{from:accounts[1]});
-        }
-        console.log("time 1 :",(new Date()).getTime());
-        result = await vaults.vaultPool.getAssetBalance(accounts[0]);
-        console.log("getAssetBalance accounts[0]",result.toString());
-        result = await vaults.vaultPool.getAssetBalance(accounts[1]);
-        console.log("getAssetBalance accounts[1]",result.toString());
+        let ray = new BN(1e15);
+        ray = ray.mul(new BN(1e3));
+        let vault1 = await defrostFactory.createCollateralVault(factory,accounts[0],accounts,"ETH-3",eth,bigNum,
+            "1000000000000000000","1500000000000000000",ray,1);
+        vault1.vaultPool = await collateralVaultTest.at(vault1.vaultPool.address);
+        let rate = await vault1.vaultPool.getAccumulatedRate();
+        assert(rate.eq(new BN("1000000000000000000000000000")),"accumulated Rate initial error!");
+        await checkStabilityFee(vault1,10,ray.muln(2),new BN("1000000010000000045000000120"));
+        await checkStabilityFee(vault1,30,ray.muln(3),new BN("1000000050000001205000018640"));
+        await checkStabilityFee(vault1,79,ray.muln(4),new BN("1000000197000019139001222423"));
+        await checkStabilityFee(vault1,298,ray.muln(3),new BN("1000001073000573647203736448"));
     });
+    it('collateralVault user settlement stability fee normal tests', async function (){
+        let price = new BN(1e15);
+        price = price.mul(new BN(30000e3));
+        await factory.oracle.setPrice(eth,price,{from:accounts[1]});
+        let ray = new BN(1e15);
+        ray = ray.mul(new BN(1e3));
+        let vault1 = await defrostFactory.createCollateralVault(factory,accounts[0],accounts,"ETH-4",eth,bigNum,
+            "1000000000000000000","1500000000000000000",ray,1);
+        vault1.vaultPool = await collateralVaultTest.at(vault1.vaultPool.address);
+        await vault1.vaultPool.join(accounts[0],ether,{from:accounts[0],value:ether})
+        await vault1.vaultPool.mintSystemCoin(accounts[0],ether.muln(5000),{from:accounts[0]});
+        let result = await vault1.vaultPool.getAssetBalance(accounts[0]);
+        assert(result.eq(new BN("5000000000000000000000")),"getAssetBalance accounts[0] check error!");
+        await checkAssetBalance(vault1,10,0,ray.muln(2),new BN("5000000050000000225000"));
+        await checkAssetBalance(vault1,30,0,ray.muln(3),new BN("5000000250000006025000"));
+        await checkAssetBalance(vault1,79,0,ray.muln(4),new BN("5000000985000095695006"));
+        await checkAssetBalance(vault1,298,0,ray.muln(3),new BN("5000005365002868236018"));
+    });
+    async function checkStabilityFee(vault1,newTime,stabilityFee,checkRate){
+        await vault1.vaultPool.setTimer(newTime);
+        await defrostFactory.multiSignatureAndSend(factory.multiSignature,vault1.vaultPool,"setStabilityFee",accounts[0],accounts,
+        stabilityFee,1);
+        rate = await vault1.vaultPool.getAccumulatedRate();
+        assert(rate.eq(checkRate),"accumulated Rate check error!");
+    }
+    async function checkAssetBalance(vault1,newTime,accountID,stabilityFee,checkBalance){
+        await vault1.vaultPool.setTimer(newTime);
+        await defrostFactory.multiSignatureAndSend(factory.multiSignature,vault1.vaultPool,"setStabilityFee",accounts[0],accounts,
+        stabilityFee,1);
+        let result = await vault1.vaultPool.getAssetBalance(accounts[accountID]);
+        assert(result.eq(new BN(checkBalance)),"accounts "+ accountID + " getAssetBalance check error!");
+    }
 });
