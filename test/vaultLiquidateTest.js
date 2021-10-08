@@ -36,8 +36,8 @@ contract('collateralVault', function (accounts){
         console.log("collateralBalances accounts[2]",result.toString());
         let price = ether.muln(3000);
         await factory.oracle.setPrice(eth,price,{from:accounts[1]});
-        result = await vaults.vaultPool.getMaxBorrowAmount(accounts[0]);
-        console.log("getMaxBorrowAmount accounts[0]",result.toString());
+        result = await vaults.vaultPool.getMaxMintAmount(accounts[0],0);
+        console.log("getMaxMintAmount accounts[0]",result.toString());
         await vaults.vaultPool.mintSystemCoin(accounts[0],ether.muln(2500),{from:accounts[0]})
         console.log("time 0 :",(new Date()).getTime());
         result = await vaults.vaultPool.totalAssetAmount();

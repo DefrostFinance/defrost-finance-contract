@@ -17,17 +17,17 @@ contract('coinMinePool', function (accounts){
         eventDecoder = new eventDecoderClass();
         eventDecoder.initEventsMap([collateralVaultAbi,coinMinePoolAbi,systemCoinAbi]);
         factory = await defrostFactory.createFactory(accounts[0],accounts);
-        let ray = new BN(1e14);
-        ray = ray.mul(new BN(1e9));
+        let ray = new BN(1e15);
+        ray = ray.mul(new BN(5e3));
         vaults = await defrostFactory.createCollateralVault(factory,accounts[0],accounts,"ETH-2",eth,bigNum,
-            "1000000000000000000","1200000000000000000",ray,1);
+            "1000000000000000000","1500000000000000000",ray,1);
         await factory.oracle.setOperator(3,accounts[1],{from:accounts[0]});
     });
     it('coinMinePool one account tests', async function (){
         await defrostFactory.multiSignatureAndSend(factory.multiSignature,factory.minePool,"setMineCoinInfo",accounts[0],accounts,beforeInfo.fnx.address,2e15,1);
         result = await factory.minePool.getMineInfo(beforeInfo.fnx.address);
         console.log("getMineInfo",result[0].toString(),result[1].toString());
-        let price = ether.muln(3000);
+        let price = ether.muln(30000);
         await factory.oracle.setPrice(eth,price,{from:accounts[1]});
         for (var k=0;k<5;k++){
             console.log("--------------------------round ", k+1, " ---------------------------------------")
@@ -38,8 +38,8 @@ contract('coinMinePool', function (accounts){
             console.log("collateralBalances accounts[0]",result.toString());
             result = await factory.minePool.getMinerBalance(accounts[0],beforeInfo.fnx.address);
             console.log("getMinerBalance",result.toString());        
-            result = await vaults.vaultPool.getMaxBorrowAmount(accounts[0]);
-            console.log("getMaxBorrowAmount accounts[0]",result.toString());
+            result = await vaults.vaultPool.getMaxMintAmount(accounts[0],0);
+            console.log("getMaxMintAmount accounts[0]",result.toString());
             await vaults.vaultPool.mintSystemCoin(accounts[0],ether.muln(2000),{from:accounts[0]})
             console.log("time 0 :",(new Date()).getTime());
             result = await factory.minePool.getMinerBalance(accounts[0],beforeInfo.fnx.address);
@@ -56,7 +56,7 @@ contract('coinMinePool', function (accounts){
         await defrostFactory.multiSignatureAndSend(factory.multiSignature,factory.minePool,"setMineCoinInfo",accounts[0],accounts,beforeInfo.fnx.address,2e15,1);
         result = await factory.minePool.getMineInfo(beforeInfo.fnx.address);
         console.log("getMineInfo",result[0].toString(),result[1].toString());
-        let price = ether.muln(3000);
+        let price = ether.muln(30000);
         await factory.oracle.setPrice(eth,price,{from:accounts[1]});
         for (var k=0;k<5;k++){
             console.log("--------------------------round ", k+1, " ---------------------------------------")
@@ -64,8 +64,8 @@ contract('coinMinePool', function (accounts){
             await vaults.vaultPool.join(accounts[2],ether.muln(100),{from:accounts[2],value:ether.muln(100)})    
             result = await vaults.vaultPool.getAssetBalance(accounts[0]);
             console.log("getAssetBalance accounts[0]",result.toString());
-            result = await vaults.vaultPool.getMaxBorrowAmount(accounts[0]);
-            console.log("getMaxBorrowAmount accounts[0]",result.toString());   
+            result = await vaults.vaultPool.getMaxMintAmount(accounts[0],0);
+            console.log("getMaxMintAmount accounts[0]",result.toString());   
             await vaults.vaultPool.mintSystemCoin(accounts[0],ether.muln(2000),{from:accounts[0]})
             await logBalance(0,factory.minePool,beforeInfo.fnx.address,accounts[0],accounts[2])
             for (var i=0;i<5;i++){
