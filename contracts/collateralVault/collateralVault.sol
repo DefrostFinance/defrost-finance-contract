@@ -67,7 +67,7 @@ contract collateralVault is vaultEngine {
     * @param amount Amount of collateral to transfer to 'account'
     **/
     function exit(address account, uint256 amount) notHalted nonReentrant settleAccount(msg.sender) external {
-        require(checkLiquidate(msg.sender,0,amount),"collateral remove overflow!");
+        require(checkLiquidate(msg.sender,amount,0),"collateral remove overflow!");
         collateralBalances[msg.sender] = collateralBalances[msg.sender].sub(amount);
         _redeem(account,collateralToken,amount);
         emit Exit(msg.sender, account, amount);
