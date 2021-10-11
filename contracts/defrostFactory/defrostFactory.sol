@@ -33,6 +33,7 @@ contract defrostFactory is defrostFactoryData {
         vaultPool.initContract(stabilityFee,feeInterval,debtCeiling,debtFloor,collateralRate,liquidationReward,liquidationPenalty);
         Authorization(systemCoin).addAuthorization(address(vaultPool));
         vaultsMap[vaultID] = address(vaultPool);
+        allVaults.push(address(vaultPool));
         emit CreateVaultPool(address(vaultPool),vaultID,collateral,debtCeiling,debtFloor,collateralRate,
             stabilityFee,feeInterval);
         return address(vaultPool);

@@ -19,6 +19,38 @@ contract('collateralVault', function (accounts){
         factory = await defrostFactory.createTestFactory(accounts[0],accounts);
         await factory.oracle.setOperator(3,accounts[1],{from:accounts[0]});
     }); 
+    it('collateralVault collateral check normal tests', async function (){
+        let price = new BN(1e15);
+        price = price.mul(new BN(30000e3));
+        await factory.oracle.setPrice(eth,price,{from:accounts[1]});
+        let ray = new BN(1e15);
+        ray = ray.mul(new BN(1e3));
+        let vault1 = await defrostFactory.createCollateralVault(factory,accounts[0],accounts,"ETH-C1",eth,bigNum,
+            "1000000000000000000","1500000000000000000",ray,1);
+        vault1.vaultPool = await collateralVaultTest.at(vault1.vaultPool.address);
+        await vault1.vaultPool.join(accounts[1],ether,{from:accounts[1],value:ether});
+        let maxMint = await vault1.vaultPool.getMaxMintAmount(accounts[1],0);
+        console.log("getMaxMintAmount",maxMint.toString());
+        await vault1.vaultPool.mintSystemCoin(accounts[1],maxMint,{from:accounts[1]});
+        await defrostFactory.testViolation("collateral is insufficient!",async function(){
+            await vault1.vaultPool.mintSystemCoin(accounts[1],1,{from:accounts[1]});
+        })
+        await vault1.vaultPool.setTimer(1);
+        let bLiquidate = await vault1.vaultPool.canLiquidate(accounts[1]);
+        assert(bLiquidate,"collateral liquidate check error!");
+
+        await vault1.vaultPool.join(accounts[2],ether,{from:accounts[3],value:ether});
+        maxMint = await vault1.vaultPool.getMaxMintAmount(accounts[2],0);
+        console.log("getMaxMintAmount",maxMint.toString());
+        await vault1.vaultPool.mintSystemCoin(accounts[3],maxMint,{from:accounts[2]});
+        await defrostFactory.testViolation("collateral is insufficient!",async function(){
+            await vault1.vaultPool.exit(accounts[3],1,{from:accounts[2]});
+        })
+        await vault1.vaultPool.setTimer(2);
+        bLiquidate = await vault1.vaultPool.canLiquidate(accounts[2]);
+        assert(bLiquidate,"collateral liquidate check error!");
+
+    });
     it('collateralVault stability fee normal tests', async function (){
 
         let ray = new BN(1e15);
