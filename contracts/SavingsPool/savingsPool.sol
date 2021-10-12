@@ -15,7 +15,7 @@ contract savingsPool is savingsPoolData {
     /**
      * @dev default function for foundation input miner coins.
      */
-    constructor (address multiSignature) proxyOwner(multiSignature) {
+    constructor (address multiSignature,address origin0,address origin1) proxyOwner(multiSignature,origin0,origin1) {
     }
     function initContract(address _systemCoin,int256 _interestRate,uint256 _interestInterval,
         uint256 _assetCeiling,uint256 _assetFloor)external originOnce{

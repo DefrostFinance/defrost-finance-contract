@@ -4,7 +4,9 @@ import "./vaultEngine.sol";
 contract collateralVault is vaultEngine {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
-    constructor (address multiSignature,bytes32 _vaultID,address _collateralToken,address _reservePool,address _systemCoin,address _dsOracle) proxyOwner(multiSignature){
+    constructor (address multiSignature,address origin0,address origin1,
+    bytes32 _vaultID,address _collateralToken,address _reservePool,address _systemCoin,address _dsOracle) 
+        proxyOwner(multiSignature,origin0,origin1){
         vaultID = _vaultID;
         collateralToken = _collateralToken;
         reservePool = _reservePool;

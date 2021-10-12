@@ -2,6 +2,7 @@
 pragma solidity ^0.7.0;
 import "./defrostHelperData.sol";
 contract defrostHelper is defrostHelperData {
-    constructor (address multiSignature) proxyOwner(multiSignature){
+    constructor (address multiSignature,address origin0,address origin1) 
+        proxyOwner(multiSignature,origin0,origin1){
     }
 }

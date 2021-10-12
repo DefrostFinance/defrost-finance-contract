@@ -10,7 +10,7 @@ import "../modules/SafeMath.sol";
 contract coinMinePool is MinePoolData {
     using SafeMath for uint256;
     using whiteListAddress for address[];
-    constructor (address multiSignature,address systemCoin) proxyOwner(multiSignature) {
+    constructor (address multiSignature,address origin0,address origin1,address systemCoin) proxyOwner(multiSignature,origin0,origin1) {
         _operators[managerIndex] = systemCoin;
     }
     /**

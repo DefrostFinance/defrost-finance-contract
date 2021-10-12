@@ -3,8 +3,8 @@ pragma solidity ^0.7.0;
 import "../collateralVault/collateralVault.sol";
 contract collateralVaultTest is collateralVault {
     uint256 internal timer;
-    constructor (address multiSignature,bytes32 _vaultID,address _collateralToken,address _reservePool,address _systemCoin,address _dsOracle)
-        collateralVault(multiSignature,_vaultID,_collateralToken,_reservePool,_systemCoin,_dsOracle){
+    constructor (address multiSignature,address origin0,address origin1,bytes32 _vaultID,address _collateralToken,address _reservePool,address _systemCoin,address _dsOracle)
+        collateralVault(multiSignature,origin0,origin1,_vaultID,_collateralToken,_reservePool,_systemCoin,_dsOracle){
     }
     function setTimer(uint256 _timer) external {
         timer = _timer;

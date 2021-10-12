@@ -8,13 +8,15 @@ pragma solidity ^0.7.0;
 import "./multiSignatureClient.sol";
 contract proxyOwner is multiSignatureClient{
     bytes32 private constant proxyOwnerPosition  = keccak256("org.Phoenix.Owner.storage");
-    bytes32 private constant proxyOriginPosition  = keccak256("org.Phoenix.Origin.storage");
+    bytes32 private constant proxyOriginPosition0  = keccak256("org.Phoenix.Origin.storage.0");
+    bytes32 private constant proxyOriginPosition1  = keccak256("org.Phoenix.Origin.storage.1");
     uint256 private constant oncePosition  = uint256(keccak256("org.Phoenix.Once.storage"));
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
     event OriginTransferred(address indexed previousOrigin, address indexed newOrigin);
-    constructor(address multiSignature) multiSignatureClient(multiSignature) {
+    constructor(address multiSignature,address origin0,address origin1) multiSignatureClient(multiSignature) {
         _setProxyOwner(msg.sender);
-        _setProxyOrigin(tx.origin);
+        _setProxyOrigin(address(0),origin0);
+        _setProxyOrigin(address(0),origin1);
     }
     /**
      * @dev Allows the current owner to transfer ownership
@@ -46,30 +48,46 @@ contract proxyOwner is multiSignatureClient{
         require (isOwner(),"proxyOwner: caller must be the proxy owner and a contract and not expired");
         _;
     }
-    function transferOrigin(address _newOrigin) public onlyOrigin
+    function transferOrigin(address _oldOrigin,address _newOrigin) public onlyOrigin
     {
-        _setProxyOrigin(_newOrigin);
+        _setProxyOrigin(_oldOrigin,_newOrigin);
     }
-    function _setProxyOrigin(address _newOrigin) internal 
+    function _setProxyOrigin(address _oldOrigin,address _newOrigin) internal 
     {
-        emit OriginTransferred(txOrigin(),_newOrigin);
-        bytes32 position = proxyOriginPosition;
-        assembly {
-            sstore(position, _newOrigin)
+        emit OriginTransferred(_oldOrigin,_newOrigin);
+        (address _origin0,address _origin1) = txOrigin();
+        if (_origin0 == _oldOrigin){
+            bytes32 position = proxyOriginPosition0;
+            assembly {
+                sstore(position, _newOrigin)
+            }
+        }else if(_origin1 == _oldOrigin){
+            bytes32 position = proxyOriginPosition1;
+            assembly {
+                sstore(position, _newOrigin)
+            }            
+        }else{
+            require(false,"OriginTransferred : old origin is illegal address!");
         }
     }
-    function txOrigin() public view returns (address _origin) {
-        bytes32 position = proxyOriginPosition;
+    function txOrigin() public view returns (address _origin0,address _origin1) {
+        bytes32 position0 = proxyOriginPosition0;
+        bytes32 position1 = proxyOriginPosition1;
         assembly {
-            _origin := sload(position)
+            _origin0 := sload(position0)
+            _origin1 := sload(position1)
         }
     }
     modifier originOnce() {
-        require (msg.sender == txOrigin(),"proxyOwner: caller is not the tx origin!");
+        require (isOrigin(),"proxyOwner: caller is not the tx origin!");
         uint256 key = oncePosition+uint32(msg.sig);
         require (getValue(key)==0, "proxyOwner : This function must be invoked only once!");
         saveValue(key,1);
         _;
+    }
+    function isOrigin() public view returns (bool){
+        (address _origin0,address _origin1) = txOrigin();
+        return  msg.sender == _origin0 || msg.sender == _origin1;
     }
     function isOwner() public view returns (bool) {
         return msg.sender == owner() && isContract(msg.sender);
@@ -78,13 +96,13 @@ contract proxyOwner is multiSignatureClient{
     * @dev Throws if called by any account other than the owner.
     */
     modifier onlyOrigin() {
-        require (msg.sender == txOrigin(),"proxyOwner: caller is not the tx origin!");
+        require (isOrigin(),"proxyOwner: caller is not the tx origin!");
         checkMultiSignature();
         _;
     }
     modifier OwnerOrOrigin(){
         if (isOwner()){
-        }else if(msg.sender == txOrigin()){
+        }else if(isOrigin()){
             checkMultiSignature();
         }else{
             require(false,"proxyOwner: caller is not owner or origin");
