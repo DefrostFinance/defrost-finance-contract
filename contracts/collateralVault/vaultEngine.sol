@@ -24,7 +24,7 @@ abstract contract vaultEngine is vaultEngineData,safeTransfer {
         uint256 collateralPrice = oraclePrice(collateralToken);
         uint256 allCollateral = collateralBalances[account].mul(collateralPrice);
         if (allCollateral > assetAndInterest){
-            return (allCollateral - assetAndInterest)/calDecimals;
+            return (allCollateral - assetAndInterest)/collateralPrice;
         }
         return 0;
     }

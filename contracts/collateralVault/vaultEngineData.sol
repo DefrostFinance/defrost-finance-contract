@@ -6,7 +6,7 @@ import "../interface/ISystemCoin.sol";
 import "../interestEngine/interestEngine.sol";
 import "../modules/ReentrancyGuard.sol";
 abstract contract vaultEngineData is Halt,ImportOracle,ReentrancyGuard,interestEngine {
-    bool public emergency = false;
+    uint256 public emergencyStart = uint(-1);
     bytes32 public vaultID;
     //Special decimals for calculation
     uint256 constant calDecimals = 1e18;

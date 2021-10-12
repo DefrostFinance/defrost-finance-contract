@@ -108,6 +108,11 @@ contract('collateralVault', function (accounts){
         console.log("collateralBalances accounts[1]",result.toString());
         await vaults.vaultPool.mintSystemCoin(accounts[0],"10000000000000000000",{from:accounts[1]})
         await vaults.vaultPool.mintSystemCoin(accounts[0],"10000000000000000000",{from:accounts[1]})
+        await defrostFactory.multiSignatureAndSend(factory.multiSignature,vaults.vaultPool,"setHalt",accounts[0],accounts,true);
+        await defrostFactory.testViolation("emergencyExit is not set",async function(){
+            await vaults.vaultPool.emergencyExit(accounts[1])
+        })
+        await defrostFactory.multiSignatureAndSend(factory.multiSignature,vaults.vaultPool,"setHalt",accounts[0],accounts,false);
         console.log("time 0 :",(new Date()).getTime());
         result = await vaults.vaultPool.totalAssetAmount();
         console.log("totalAssetAmount",result.toString());

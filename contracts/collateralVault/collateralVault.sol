@@ -23,7 +23,9 @@ contract collateralVault is vaultEngine {
         _setLiquidationInfo(_liquidationReward,_liquidationPenalty);
     }
     function setEmergency()external isHalted onlyOrigin{
-        emergency = true;
+        if (emergencyStart != uint(-1)){
+            emergencyStart = block.timestamp + 3 days;
+        }
     }
     function setLiquidationInfo(uint256 _liquidationReward,uint256 _liquidationPenalty)external onlyOrigin{
         _setLiquidationInfo(_liquidationReward,_liquidationPenalty);
@@ -73,7 +75,7 @@ contract collateralVault is vaultEngine {
         emit Exit(msg.sender, account, amount);
     }
     function emergencyExit(address account) isHalted nonReentrant external{
-        require(emergency,"This contract is not at emergency state");
+        require(emergencyStart < block.timestamp,"This contract is not at emergency state");
         uint256 amount = collateralBalances[msg.sender];
         _redeem(account,collateralToken,amount);
         collateralBalances[msg.sender] = 0;
