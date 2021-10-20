@@ -103,7 +103,9 @@ contract collateralVault is vaultEngine {
     }
     function joinAndMint(uint256 collateralamount, uint256 systemCoinAmount)payable notHalted nonReentrant settleAccount(msg.sender) external{
         _join(msg.sender,collateralamount);
-        _mintSystemCoin(msg.sender,systemCoinAmount);
+        if (systemCoinAmount>0){
+            _mintSystemCoin(msg.sender,systemCoinAmount);
+        }
     }
     function repaySystemCoin(address account, uint256 amount) notHalted nonReentrant settleAccount(account) external{
         if(amount == uint256(-1)){

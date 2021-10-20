@@ -61,9 +61,9 @@ contract('collateralVault', function (accounts){
         let vault1 = await defrostFactory.createCollateralVault(factory,accounts[0],accounts,"ETH-3",eth,bigNum,
             "1000000000000000000","1500000000000000000",ray,1);
 
-        await defrostFactory.multiSignatureAndSend(factory.multiSignature,vault1.vaultPool,"setStabilityFee",accounts[0],accounts,
+        await defrostFactory.multiSignatureAndSend(factory.multiSignature,vault1.vaultPool,"setStabilityFee",accounts[1],accounts,
         maxFee,3600);
-        await defrostFactory.multiSignatureAndSend(factory.multiSignature,vault1.vaultPool,"setStabilityFee",accounts[0],accounts,
+        await defrostFactory.multiSignatureAndSend(factory.multiSignature,vault1.vaultPool,"setStabilityFee",accounts[1],accounts,
         minFee,3600);
         await defrostFactory.testViolation("stability Fee Is too big",async function(){
             await defrostFactory.multiSignatureAndSend(factory.multiSignature,vault1.vaultPool,"setStabilityFee",accounts[0],accounts,
