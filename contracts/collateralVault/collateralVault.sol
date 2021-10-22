@@ -136,7 +136,7 @@ contract collateralVault is vaultEngine {
         allDebt += penalty;
         uint256 _payback = allDebt.mul(calDecimals+liquidationReward)/collateralPrice;
         _payback = _payback <= collateral ? _payback : collateral;
-        collateralBalances[account] = collateralBalances[account].sub(_payback);
+        collateralBalances[account] = collateral.sub(_payback);
         _redeem(msg.sender,collateralToken,_payback);
         emit Liquidate(msg.sender,account,collateralToken,allDebt,penalty,_payback);  
     }

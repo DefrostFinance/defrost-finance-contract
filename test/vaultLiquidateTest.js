@@ -18,9 +18,9 @@ contract('collateralVault', function (accounts){
         eventDecoder.initEventsMap([collateralVaultAbi,coinMinePoolAbi,systemCoinAbi]);
         factory = await defrostFactory.createFactory(accounts[0],accounts);
         let ray = new BN(1e15);
-        ray = ray.mul(new BN(1e9));
+        ray = ray.mul(new BN(5e3));
         vaults = await defrostFactory.createCollateralVault(factory,accounts[0],accounts,"ETH-2",eth,bigNum,
-            "1000000000000000000","1200000000000000000",ray,1);
+            "1000000000000000000","1500000000000000000",ray,1);
         await factory.oracle.setOperator(3,accounts[1],{from:accounts[0]});
     }); 
     it('collateralVault liquidate tests', async function (){
@@ -38,7 +38,7 @@ contract('collateralVault', function (accounts){
         await factory.oracle.setPrice(eth,price,{from:accounts[1]});
         result = await vaults.vaultPool.getMaxMintAmount(accounts[0],0);
         console.log("getMaxMintAmount accounts[0]",result.toString());
-        await vaults.vaultPool.mintSystemCoin(accounts[0],ether.muln(2500),{from:accounts[0]})
+        await vaults.vaultPool.mintSystemCoin(accounts[0],ether.muln(2000),{from:accounts[0]})
         console.log("time 0 :",(new Date()).getTime());
         result = await vaults.vaultPool.totalAssetAmount();
         console.log("totalAssetAmount",result.toString());

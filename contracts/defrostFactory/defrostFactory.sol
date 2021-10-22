@@ -2,7 +2,7 @@
 pragma solidity ^0.7.0;
 import "./defrostFactoryData.sol";
 import "../collateralVault/collateralVault.sol";
-import "../systemCoin/mineCoin.sol";
+import "../systemCoin/Coin.sol";
 interface Authorization{
     function addAuthorization(address account) external;
 }
@@ -44,10 +44,7 @@ contract defrostFactory is defrostFactoryData {
         string memory symbol_,
         uint256 chainId_)external onlyOrigin {
         require(systemCoin == address(0),"systemCoin : systemCoin is already deployed!");
-        mineCoin coin = new mineCoin(name_,symbol_,chainId_);
+        Coin coin = new Coin(name_,symbol_,chainId_);
         systemCoin = address(coin);
-    }
-    function setSystemCoinMinePool(address minePool)external onlyOrigin{
-        mineCoin(systemCoin).setMinePool(minePool);
     }
 }
