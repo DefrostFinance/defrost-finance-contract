@@ -25,7 +25,7 @@ contract collateralVault is vaultEngine {
         _setLiquidationInfo(_liquidationReward,_liquidationPenalty);
     }
     function setEmergency()external isHalted onlyOrigin{
-        if (emergencyStart != uint(-1)){
+        if (emergencyStart == uint(-1)){
             emergencyStart = block.timestamp + 3 days;
         }
     }
