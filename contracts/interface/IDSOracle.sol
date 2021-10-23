@@ -29,7 +29,7 @@ abstract contract ImportOracle is proxyOwner{
     function getOracleAddress() public view returns(address){
         return address(_oracle);
     }
-    function setOracleAddress(address oracle)public onlyOwner{
+    function setOracleAddress(address oracle)public OwnerOrOrigin{
         _oracle = IDSOracle(oracle);
     }
 }
