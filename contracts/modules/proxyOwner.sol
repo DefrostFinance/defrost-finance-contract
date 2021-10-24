@@ -7,10 +7,10 @@ pragma solidity ^0.7.0;
  */
 import "./multiSignatureClient.sol";
 contract proxyOwner is multiSignatureClient{
-    bytes32 private constant proxyOwnerPosition  = keccak256("org.Phoenix.Owner.storage");
-    bytes32 private constant proxyOriginPosition0  = keccak256("org.Phoenix.Origin.storage.0");
-    bytes32 private constant proxyOriginPosition1  = keccak256("org.Phoenix.Origin.storage.1");
-    uint256 private constant oncePosition  = uint256(keccak256("org.Phoenix.Once.storage"));
+    bytes32 private constant proxyOwnerPosition  = keccak256("org.defrost.Owner.storage");
+    bytes32 private constant proxyOriginPosition0  = keccak256("org.defrost.Origin.storage.0");
+    bytes32 private constant proxyOriginPosition1  = keccak256("org.defrost.Origin.storage.1");
+    uint256 private constant oncePosition  = uint256(keccak256("org.defrost.Once.storage"));
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
     event OriginTransferred(address indexed previousOrigin, address indexed newOrigin);
     constructor(address multiSignature,address origin0,address origin1) multiSignatureClient(multiSignature) {

@@ -1,6 +1,6 @@
 /**
  * SPDX-License-Identifier: GPL-3.0-or-later
- * Copyright (C) 2020 defrost Options Protocol
+ * Copyright (C) 2020 defrost Protocol
  */
 
 pragma solidity ^0.7.0;

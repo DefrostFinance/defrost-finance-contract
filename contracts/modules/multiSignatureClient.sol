@@ -1,7 +1,7 @@
 /**
  * SPDX-License-Identifier: GPL-3.0-or-later
  * defrost
- * Copyright (C) 2020 defrost Options Protocol
+ * Copyright (C) 2020 defrost Protocol
  */
 pragma solidity ^0.7.0;
 
@@ -9,7 +9,7 @@ interface IMultiSignature{
     function getValidSignature(bytes32 msghash,uint256 lastIndex) external view returns(uint256);
 }
 contract multiSignatureClient{
-    uint256 private constant multiSignaturePositon = uint256(keccak256("org.Phoenix.multiSignature.storage"));
+    uint256 private constant multiSignaturePositon = uint256(keccak256("org.defrost.multiSignature.storage"));
     constructor(address multiSignature) {
         require(multiSignature != address(0),"multiSignatureClient : Multiple signature contract address is zero!");
         saveValue(multiSignaturePositon,uint256(multiSignature));
