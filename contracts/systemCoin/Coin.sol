@@ -11,7 +11,7 @@ contract Coin {
      * @notice Add auth to an account
      * @param account Account to add auth to
      */
-    function addAuthorization(address account) external isAuthorized {
+    function addAuthorization(address account) external isAuthorized notZeroAddress(account) {
         authorizedAccounts[account] = 1;
         emit AddAuthorization(account);
     }
@@ -19,7 +19,7 @@ contract Coin {
      * @notice Remove auth from an account
      * @param account Account to remove auth from
      */
-    function removeAuthorization(address account) external isAuthorized {
+    function removeAuthorization(address account) external isAuthorized notZeroAddress(account) {
         authorizedAccounts[account] = 0;
         emit RemoveAuthorization(account);
     }
@@ -30,6 +30,10 @@ contract Coin {
         require(authorizedAccounts[msg.sender] == 1, "Coin/account-not-authorized");
         _;
     }
+    modifier notZeroAddress(address inputAddress) {
+        require(inputAddress != address(0), "Coin : input zero address");
+        _;
+    }
 
     // --- ERC20 Data ---
     // The name of this coin
@@ -37,7 +41,7 @@ contract Coin {
     // The symbol of this coin
     string  public symbol;
     // The version of this Coin contract
-    string  public version = "1";
+    string  public constant version = "1";
     // The number of decimals that this coin has
     uint8   public constant decimals = 18;
 
@@ -96,7 +100,7 @@ contract Coin {
     * @param dst The address to transfer coins to
     * @param amount The amount of coins to transfer
     */
-    function transfer(address dst, uint256 amount) public virtual returns (bool) {
+    function transfer(address dst, uint256 amount) external returns (bool) {
         return transferFrom(msg.sender, dst, amount);
     }
     /*
@@ -106,7 +110,7 @@ contract Coin {
     * @param amount The amount of coins to transfer
     */
     function transferFrom(address src, address dst, uint256 amount)
-        public virtual returns (bool)
+        external returns (bool)
     {
         require(dst != address(0), "Coin/null-dst");
         require(dst != address(this), "Coin/dst-cannot-be-this-contract");
@@ -125,7 +129,7 @@ contract Coin {
     * @param usr The address for which to mint coins
     * @param amount The amount of coins to mint
     */
-    function mint(address usr, uint256 amount) public virtual isAuthorized {
+    function mint(address usr, uint256 amount) external isAuthorized notZeroAddress(usr) {
         balanceOf[usr] = addition(balanceOf[usr], amount);
         totalSupply    = addition(totalSupply, amount);
         emit Transfer(address(0), usr, amount);
@@ -135,7 +139,7 @@ contract Coin {
     * @param usr The address that will have its coins burned
     * @param amount The amount of coins to burn
     */
-    function burn(address usr, uint256 amount) public virtual {
+    function burn(address usr, uint256 amount) external {
         require(balanceOf[usr] >= amount, "Coin/insufficient-balance");
         if (usr != msg.sender && allowance[usr][msg.sender] != uint256(-1)) {
             require(allowance[usr][msg.sender] >= amount, "Coin/insufficient-allowance");
@@ -150,7 +154,7 @@ contract Coin {
     * @param usr The address whose allowance is changed
     * @param amount The new total allowance for the usr
     */
-    function approve(address usr, uint256 amount) external returns (bool) {
+    function approve(address usr, uint256 amount) external returns (bool) notZeroAddress(usr) {
         allowance[msg.sender][usr] = amount;
         emit Approval(msg.sender, usr, amount);
         return true;
@@ -191,15 +195,5 @@ contract Coin {
         uint256 wad = allowed ? uint256(-1) : 0;
         allowance[holder][spender] = wad;
         emit Approval(holder, spender, wad);
-    }
-    function isContract(address account) internal view returns (bool) {
-        // This method relies on extcodesize, which returns 0 for contracts in
-        // construction, since the code is only stored at the end of the
-        // constructor execution.
-
-        uint256 size;
-        // solhint-disable-next-line no-inline-assembly
-        assembly { size := extcodesize(account) }
-        return size > 0;
     }
 }

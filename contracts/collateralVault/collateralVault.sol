@@ -7,6 +7,10 @@ contract collateralVault is vaultEngine {
     constructor (address multiSignature,address origin0,address origin1,
     bytes32 _vaultID,address _collateralToken,address _reservePool,address _systemCoin,address _dsOracle) 
         proxyOwner(multiSignature,origin0,origin1){
+        require(_reservePool != address(0)&&
+        _systemCoin != address(0)&&
+        _dsOracle != address(0), "collateralVault : input zero address");
+
         vaultID = _vaultID;
         collateralToken = _collateralToken;
         reservePool = _reservePool;
@@ -23,10 +27,12 @@ contract collateralVault is vaultEngine {
         accumulatedRate = rayDecimals;
         _setInterestInfo(_stabilityFee,_feeInterval,12e26,8e26);
         _setLiquidationInfo(_liquidationReward,_liquidationPenalty);
+        emit InitContract(msg.sender,_stabilityFee,_feeInterval,_assetCeiling,_assetFloor,_collateralRate,_liquidationReward,_liquidationPenalty);
     }
     function setEmergency()external isHalted onlyOrigin{
         if (emergencyStart == uint(-1)){
             emergencyStart = block.timestamp + 3 days;
+            emit SetEmergency(msg.sender,emergencyStart);
         }
     }
     function setLiquidationInfo(uint256 _liquidationReward,uint256 _liquidationPenalty)external onlyOrigin{
@@ -53,7 +59,7 @@ contract collateralVault is vaultEngine {
     * @param amount Amount of collateral to transfer in the system
     **/
 
-    function join(address account, uint256 amount) notHalted nonReentrant payable external {
+    function join(address account, uint256 amount) notHalted nonReentrant notZeroAddress(account) payable external {
         _join(account,amount);
     }
     function _join(address account, uint256 amount) internal {
@@ -69,13 +75,13 @@ contract collateralVault is vaultEngine {
     * @param account Account to which we transfer the collateral
     * @param amount Amount of collateral to transfer to 'account'
     **/
-    function exit(address account, uint256 amount) notHalted nonReentrant settleAccount(msg.sender) external {
+    function exit(address account, uint256 amount) notHalted nonReentrant notZeroAddress(account) settleAccount(msg.sender) external {
         require(checkLiquidate(msg.sender,amount,0),"collateral remove overflow!");
         collateralBalances[msg.sender] = collateralBalances[msg.sender].sub(amount);
         _redeem(account,collateralToken,amount);
         emit Exit(msg.sender, account, amount);
     }
-    function emergencyExit(address account) isHalted nonReentrant external{
+    function emergencyExit(address account) isHalted nonReentrant notZeroAddress(account) external{
         require(emergencyStart < block.timestamp,"This contract is not at emergency state");
         uint256 amount = collateralBalances[msg.sender];
         _redeem(account,collateralToken,amount);
@@ -91,7 +97,7 @@ contract collateralVault is vaultEngine {
         }
         return 0;
     }
-    function mintSystemCoin(address account, uint256 amount) notHalted nonReentrant external{
+    function mintSystemCoin(address account, uint256 amount) notZeroAddress(account) notHalted nonReentrant external{
         _mintSystemCoin(account,amount);
     }
     function _mintSystemCoin(address account, uint256 amount) settleAccount(msg.sender) internal{
@@ -106,7 +112,7 @@ contract collateralVault is vaultEngine {
             _mintSystemCoin(msg.sender,systemCoinAmount);
         }
     }
-    function repaySystemCoin(address account, uint256 amount) notHalted nonReentrant settleAccount(account) external{
+    function repaySystemCoin(address account, uint256 amount) notZeroAddress(account) notHalted nonReentrant settleAccount(account) external{
         if(amount == uint256(-1)){
             amount = assetInfoMap[account].assetAndInterest;
         }
@@ -123,7 +129,7 @@ contract collateralVault is vaultEngine {
         }
         emit RepaySystemCoin(msg.sender,account,amount);
     }
-    function liquidate(address account) notHalted settleAccount(account) nonReentrant external{        
+    function liquidate(address account) notHalted notZeroAddress(account) settleAccount(account) nonReentrant external{        
         require(!checkLiquidate(account,0,0),"liquidation check error!");
         uint256 collateralPrice = oraclePrice(collateralToken);
         uint256 collateral = collateralBalances[account];
@@ -138,5 +144,9 @@ contract collateralVault is vaultEngine {
         collateralBalances[account] = collateral.sub(_payback);
         _redeem(msg.sender,collateralToken,_payback);
         emit Liquidate(msg.sender,account,collateralToken,allDebt,penalty,_payback);  
+    }
+    modifier notZeroAddress(address inputAddress) {
+        require(inputAddress != address(0), "collateralVault : input zero address");
+        _;
     }
 }

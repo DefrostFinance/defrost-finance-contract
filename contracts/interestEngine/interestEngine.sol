@@ -39,7 +39,7 @@ contract interestEngine{
      * @dev retrieve Interest informations.
      * @return distributed Interest rate and distributed time interval.
      */
-    function getInterestInfo()public view returns(int256,uint256){
+    function getInterestInfo()external view returns(int256,uint256){
         return (interestRate,interestInterval);
     }
 

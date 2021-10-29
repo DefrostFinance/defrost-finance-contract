@@ -11,4 +11,5 @@ abstract contract defrostFactoryData is proxyOwner{
 
     event CreateVaultPool(address indexed poolAddress,bytes32 indexed vaultID,address indexed collateral,uint256 debtCeiling,uint256 debtFloor,uint256 collateralRate,
     int256 stabilityFee,uint256 feeInterval);
+    event CreateSystemCoin(address indexed sender,address indexed systemCoin);
 }

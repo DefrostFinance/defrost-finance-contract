@@ -22,6 +22,9 @@ abstract contract vaultEngineData is Halt,ImportOracle,ReentrancyGuard,interestE
     address public reservePool;
     ISystemCoin public systemCoin;
 
+    event InitContract(address indexed sender,int256 stabilityFee,uint256 feeInterval,uint256 assetCeiling,uint256 assetFloor,
+        uint256 collateralRate,uint256 liquidationReward,uint256 liquidationPenalty);
+    event SetEmergency(address indexed sender,uint256 emergencyStart);
     event MintSystemCoin(address indexed sender,address indexed account,uint256 amount);
     event RepaySystemCoin(address indexed sender,address indexed account,uint256 amount);
     event Liquidate(address indexed sender,address indexed account,address indexed collateralToken,
@@ -29,6 +32,6 @@ abstract contract vaultEngineData is Halt,ImportOracle,ReentrancyGuard,interestE
     event Join(address indexed sender, address indexed account, uint256 amount);
     event Exit(address indexed sender, address indexed account, uint256 amount);
     event EmergencyExit(address indexed sender, address indexed account, uint256 amount);
-    event SetLiquidationInfo(address indexed sender,uint256 _liquidationReward,uint256 _liquidationPenalty);
-    event SetPoolLimitation(address indexed sender,uint256 _assetCeiling,uint256 _assetFloor);
+    event SetLiquidationInfo(address indexed sender,uint256 liquidationReward,uint256 liquidationPenalty);
+    event SetPoolLimitation(address indexed sender,uint256 assetCeiling,uint256 assetFloor);
 }

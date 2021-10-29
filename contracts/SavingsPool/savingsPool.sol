@@ -23,6 +23,7 @@ contract savingsPool is savingsPoolData {
         assetCeiling = _assetCeiling;
         assetFloor = _assetFloor;
         _setInterestInfo(_interestRate,_interestInterval,12e26,rayDecimals);
+        emit InitContract(msg.sender,_systemCoin,_interestRate,_interestInterval,_assetCeiling,_assetFloor);
 
     }
     receive()external payable{

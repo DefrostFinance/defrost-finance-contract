@@ -40,4 +40,6 @@ abstract contract vaultEngine is vaultEngineData,safeTransfer {
         uint256 assetAndInterest = assetInfoMap[account].assetAndInterest.add(newMint);
         return assetAndInterest.mul(collateralRate)<=allCollateral;
     }
+
+
 }

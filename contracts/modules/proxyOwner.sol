@@ -14,6 +14,9 @@ contract proxyOwner is multiSignatureClient{
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
     event OriginTransferred(address indexed previousOrigin, address indexed newOrigin);
     constructor(address multiSignature,address origin0,address origin1) multiSignatureClient(multiSignature) {
+        require(multiSignature != address(0) &&
+        origin0 != address(0)&&
+        origin1 != address(0),"proxyOwner : input zero address");
         _setProxyOwner(msg.sender);
         _setProxyOrigin(address(0),origin0);
         _setProxyOrigin(address(0),origin1);

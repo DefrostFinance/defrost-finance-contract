@@ -12,6 +12,8 @@ contract defrostFactory is defrostFactoryData {
      */
     constructor (address multiSignature,address origin0,address origin1,address _reservePool,address _dsOracle) 
         proxyOwner(multiSignature,origin0,origin1) {
+        require(_reservePool != address(0)&&
+            _dsOracle != address(0), "defrostFactory : input zero address");
         reservePool = _reservePool;
         dsOracle = _dsOracle;
     }
@@ -46,5 +48,6 @@ contract defrostFactory is defrostFactoryData {
         require(systemCoin == address(0),"systemCoin : systemCoin is already deployed!");
         Coin coin = new Coin(name_,symbol_,chainId_);
         systemCoin = address(coin);
+        emit CreateSystemCoin(msg.sender,address(coin));
     }
 }
