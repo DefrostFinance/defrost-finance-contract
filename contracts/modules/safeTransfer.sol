@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.7.0;
+pragma solidity >=0.7.0 <0.8.0;
 import "./safeErc20.sol";
 abstract contract safeTransfer{
     using SafeERC20 for IERC20;

@@ -3,7 +3,7 @@
  * defrost
  * Copyright (C) 2020 defrost Protocol
  */
-pragma solidity ^0.7.0;
+pragma solidity >=0.7.0 <0.8.0;
 
 /**
  * @dev Interface of the ERC20 standard as defined in the EIP. Does not include

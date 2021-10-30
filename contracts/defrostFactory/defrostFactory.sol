@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.7.0;
+pragma solidity >=0.7.0 <0.8.0;
 import "./defrostFactoryData.sol";
 import "../collateralVault/collateralVault.sol";
 import "../systemCoin/Coin.sol";
@@ -43,10 +43,9 @@ contract defrostFactory is defrostFactoryData {
         return address(vaultPool);
     }
     function createSystemCoin(string memory name_,
-        string memory symbol_,
-        uint256 chainId_)external onlyOrigin {
+        string memory symbol_)external onlyOrigin {
         require(systemCoin == address(0),"systemCoin : systemCoin is already deployed!");
-        Coin coin = new Coin(name_,symbol_,chainId_);
+        Coin coin = new Coin(name_,symbol_);
         systemCoin = address(coin);
         emit CreateSystemCoin(msg.sender,address(coin));
     }

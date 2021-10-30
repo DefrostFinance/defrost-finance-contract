@@ -3,7 +3,7 @@
  * Copyright (C) 2020 defrost Protocol
  */
 
-pragma solidity ^0.7.0;
+pragma solidity >=0.7.0 <0.8.0;
 contract Coin {
     // --- Auth ---
     mapping (address => uint256) public authorizedAccounts;
@@ -44,9 +44,6 @@ contract Coin {
     string  public constant version = "1";
     // The number of decimals that this coin has
     uint8   public constant decimals = 18;
-
-    // The id of the chain where this coin was deployed
-    uint256 public chainId;
     // The total supply of this coin
     uint256 public totalSupply;
 
@@ -71,26 +68,12 @@ contract Coin {
         require((z = x - y) <= x, "Coin/sub-underflow");
     }
 
-    // --- EIP712 niceties ---
-    bytes32 public DOMAIN_SEPARATOR;
-    // bytes32 public constant PERMIT_TYPEHASH = keccak256("Permit(address holder,address spender,uint256 nonce,uint256 expiry,bool allowed)");
-    bytes32 public constant PERMIT_TYPEHASH = 0xea2aa0a1be11a07ed86d755c93467f4f82362b452371d1ba94d1715123511acb;
-
     constructor(string memory name_,
-        string memory symbol_,
-        uint256 chainId_
+        string memory symbol_
       ) {
         authorizedAccounts[msg.sender] = 1;
         name          = name_;
         symbol        = symbol_;
-        chainId       = chainId_;
-        DOMAIN_SEPARATOR = keccak256(abi.encode(
-            keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
-            keccak256(bytes(name)),
-            keccak256(bytes(version)),
-            chainId_,
-            address(this)
-        ));
         emit AddAuthorization(msg.sender);
     }
 
@@ -110,7 +93,7 @@ contract Coin {
     * @param amount The amount of coins to transfer
     */
     function transferFrom(address src, address dst, uint256 amount)
-        external returns (bool)
+        public returns (bool)
     {
         require(dst != address(0), "Coin/null-dst");
         require(dst != address(this), "Coin/dst-cannot-be-this-contract");
@@ -154,46 +137,10 @@ contract Coin {
     * @param usr The address whose allowance is changed
     * @param amount The new total allowance for the usr
     */
-    function approve(address usr, uint256 amount) external returns (bool) notZeroAddress(usr) {
+    function approve(address usr, uint256 amount) external notZeroAddress(usr) returns (bool)  {
         allowance[msg.sender][usr] = amount;
         emit Approval(msg.sender, usr, amount);
         return true;
     }
 
-
-    // --- Approve by signature ---
-    /*
-    * @notice Submit a signed message that modifies an allowance for a specific address
-    */
-    function permit(
-        address holder,
-        address spender,
-        uint256 nonce,
-        uint256 expiry,
-        bool allowed,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) external
-    {
-        bytes32 digest =
-            keccak256(abi.encodePacked(
-                "\x19\x01",
-                DOMAIN_SEPARATOR,
-                keccak256(abi.encode(PERMIT_TYPEHASH,
-                                     holder,
-                                     spender,
-                                     nonce,
-                                     expiry,
-                                     allowed))
-        ));
-
-        require(holder != address(0), "Coin/invalid-address-0");
-        require(holder == ecrecover(digest, v, r, s), "Coin/invalid-permit");
-        require(expiry == 0 || block.timestamp <= expiry, "Coin/permit-expired");
-        require(nonce == nonces[holder]++, "Coin/invalid-nonce");
-        uint256 wad = allowed ? uint256(-1) : 0;
-        allowance[holder][spender] = wad;
-        emit Approval(holder, spender, wad);
-    }
 }

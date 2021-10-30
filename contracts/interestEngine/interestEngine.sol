@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.7.0;
+pragma solidity >=0.7.0 <0.8.0;
 import "../modules/SafeMath.sol";
 /**
  * @title interest engine.
@@ -10,7 +10,7 @@ contract interestEngine{
     using SafeMath for uint256;
 
         //Special decimals for calculation
-    uint256 constant rayDecimals = 1e27;
+    uint256 constant internal rayDecimals = 1e27;
 
     uint256 public totalAssetAmount;
         // Maximum amount of debt that can be generated with this collateral type

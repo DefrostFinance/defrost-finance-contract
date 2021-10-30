@@ -3,7 +3,7 @@
  * defrost
  * Copyright (C) 2020 defrost Protocol
  */
-pragma solidity ^0.7.0;
+pragma solidity >=0.7.0 <0.8.0;
 
 interface IMultiSignature{
     function getValidSignature(bytes32 msghash,uint256 lastIndex) external view returns(uint256);

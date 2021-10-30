@@ -2,7 +2,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright (C) 2020 defrost Protocol
  */
-pragma solidity ^0.7.0;
+pragma solidity >=0.7.0 <0.8.0;
 import "../interface/ISystemCoin.sol";
 import "../interestEngine/interestEngine.sol";
 import "../modules/ReentrancyGuard.sol";

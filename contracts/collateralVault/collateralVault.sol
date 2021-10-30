@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.7.0;
+pragma solidity >=0.7.0 <0.8.0;
 import "./vaultEngine.sol";
 contract collateralVault is vaultEngine {
     using SafeMath for uint256;
@@ -39,7 +39,7 @@ contract collateralVault is vaultEngine {
         _setLiquidationInfo(_liquidationReward,_liquidationPenalty);
     }
     function _setLiquidationInfo(uint256 _liquidationReward,uint256 _liquidationPenalty)internal {
-        require(_liquidationReward <= 5e17 && 
+        require(_liquidationReward <= 5e17 && _liquidationPenalty <= 5e17 &&
             (calDecimals+_liquidationPenalty)*(calDecimals+_liquidationReward)/calDecimals <= collateralRate,"Collateral Vault : Liquidate setting overflow!");
         liquidationReward = _liquidationReward;
         liquidationPenalty = _liquidationPenalty; 
