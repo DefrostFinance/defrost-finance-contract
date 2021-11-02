@@ -55,8 +55,7 @@ contract swapOracle is proxyOwner {
     function getUnderlyingAggregator(uint256 underlying) external view returns (address,uint256) {
         return (address(assetsMap[underlying]),decimalsMap[underlying]);
     }
-
-    function getUnderlyingPrice(uint256 underlying) public view returns (bool,uint256) {
+    function _getPrice(uint256 underlying) internal view returns (bool,uint256) {
         AggregatorV3Interface assetsPrice = assetsMap[underlying];
         if (address(assetsPrice) != address(0)){
             (, int price,,,) = assetsPrice.latestRoundData();
@@ -66,14 +65,19 @@ contract swapOracle is proxyOwner {
             return (false,0);
         }
     }
-    function getErc20Price(address erc20) public view returns (bool,uint256) {
-        return getUnderlyingPrice(uint256(erc20));        
+    function getUnderlyingPrice(uint256 underlying) public view returns (uint256) {
+        (,uint256 price) = _getPrice(underlying);
+        return price;
+    }
+    function getErc20Price(address erc20) public view returns (uint256) {
+        (,uint256 price) = _getPrice(uint256(erc20));
+        return price;
     }
     function getUniswapPairPrice(address pair) public view returns (uint256) {
         IUniswapV2Pair upair = IUniswapV2Pair(pair);
         (uint112 reserve0, uint112 reserve1,) = upair.getReserves();
-        (bool have0,uint256 price0) = getErc20Price(upair.token0());
-        (bool have1,uint256 price1) = getErc20Price(upair.token1());
+        (bool have0,uint256 price0) = _getPrice(uint256(upair.token0()));
+        (bool have1,uint256 price1) = _getPrice(uint256(upair.token1()));
         uint256 totalAssets = 0;
         if(have0 && have1){
             totalAssets = price0*reserve0+price1*reserve1;
@@ -95,8 +99,7 @@ contract swapOracle is proxyOwner {
         if(success){
             return getUniswapPairPrice(token);
         }else{
-            (,uint256 price) = getErc20Price(token);
-            return price;
+            return getErc20Price(token);
         }
     }
     function getPrices(address[]calldata assets) external view returns (uint256[]memory) {
