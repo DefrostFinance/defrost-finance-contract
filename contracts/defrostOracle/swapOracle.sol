@@ -15,7 +15,7 @@ abstract contract swapOracle is chainLinkOracle {
         if(have0 && have1){
             price0 *= reserve0;  
             price1 *= reserve1;
-            uint256 tol = price1/10;  
+            uint256 tol = price1/20;  
             bool inTol = (price0 < price1+tol && price0 > price1-tol);
             totalAssets = price0+price1;
             uint256 total = upair.totalSupply();
