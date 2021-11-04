@@ -90,7 +90,7 @@ contract collateralVault is vaultEngine {
     }
     function getMaxMintAmount(address account,uint256 newAddCollateral) external view returns(uint256){
         uint256 allDebt =getAssetBalance(account);
-        uint256 collateralPrice = oraclePrice(collateralToken);
+        (,uint256 collateralPrice) = oraclePrice(collateralToken);
         uint256 newMint = collateralBalances[account].add(newAddCollateral).mul(collateralPrice)/collateralRate;
         if (newMint>allDebt){
             return newMint - allDebt;
@@ -131,7 +131,7 @@ contract collateralVault is vaultEngine {
     }
     function liquidate(address account) notHalted notZeroAddress(account) settleAccount(account) nonReentrant external{        
         require(!checkLiquidate(account,0,0),"liquidation check error!");
-        uint256 collateralPrice = oraclePrice(collateralToken);
+        (,uint256 collateralPrice) = oraclePrice(collateralToken);
         uint256 collateral = collateralBalances[account];
         uint256 allDebt = assetInfoMap[account].assetAndInterest;
         uint256 penalty = allDebt.mul(liquidationPenalty)/calDecimals;

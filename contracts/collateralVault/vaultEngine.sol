@@ -21,7 +21,7 @@ abstract contract vaultEngine is vaultEngineData,safeTransfer {
     }
     function getCollateralLeft(address account) external view returns (uint256){
         uint256 assetAndInterest =getAssetBalance(account).mul(collateralRate);
-        uint256 collateralPrice = oraclePrice(collateralToken);
+        (,uint256 collateralPrice) = oraclePrice(collateralToken);
         uint256 allCollateral = collateralBalances[account].mul(collateralPrice);
         if (allCollateral > assetAndInterest){
             return (allCollateral - assetAndInterest)/collateralPrice;
@@ -30,12 +30,13 @@ abstract contract vaultEngine is vaultEngineData,safeTransfer {
     }
     function canLiquidate(address account) external view returns (bool){
         uint256 assetAndInterest =getAssetBalance(account);
-        uint256 collateralPrice = oraclePrice(collateralToken);
+        (,uint256 collateralPrice) = oraclePrice(collateralToken);
         uint256 allCollateral = collateralBalances[account].mul(collateralPrice);
         return assetAndInterest.mul(collateralRate)>allCollateral;
     }
     function checkLiquidate(address account,uint256 removeCollateral,uint256 newMint) internal view returns(bool){
-        uint256 collateralPrice = oraclePrice(collateralToken);
+        (bool inTol,uint256 collateralPrice) = oraclePrice(collateralToken);
+        require(inTol,"Oracle price is abnormal!");
         uint256 allCollateral = (collateralBalances[account].sub(removeCollateral)).mul(collateralPrice);
         uint256 assetAndInterest = assetInfoMap[account].assetAndInterest.add(newMint);
         return assetAndInterest.mul(collateralRate)<=allCollateral;

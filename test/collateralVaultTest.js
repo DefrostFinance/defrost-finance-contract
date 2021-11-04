@@ -73,10 +73,6 @@ contract('collateralVault', function (accounts){
             await defrostFactory.multiSignatureAndSend(factory.multiSignature,vault1.vaultPool,"setStabilityFee",accounts[0],accounts,
             minFee.subn(1),3600);
         })
-        await defrostFactory.testViolation("Liquidation penalty is greater than liquidation reward",async function(){
-            await defrostFactory.multiSignatureAndSend(factory.multiSignature,vault1.vaultPool,"setLiquidationInfo",accounts[0],accounts,
-            "70000000000000000","80000000000000000");
-        })
         await defrostFactory.testViolation("Liquidation reward is greater than collateral rate",async function(){
             await defrostFactory.multiSignatureAndSend(factory.multiSignature,vault1.vaultPool,"setLiquidationInfo",accounts[0],accounts,
             "600000000000000000","80000000000000000");

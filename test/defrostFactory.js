@@ -27,11 +27,11 @@ module.exports = {
         let oracle = await this.createFromJson("D:\\work\\solidity\\PhoenixOptionsV1.0\\build\\contracts\\PHXOracle.json",account);
         let dFactory = await defrostFactory.new(multiSign.address,accounts[0],accounts[1],accounts[1],oracle.address,{from:account});
         
-        await this.multiSignatureAndSend(multiSign,dFactory,"createSystemCoin",account,accounts,"H2O","H2O",5777);
+        await this.multiSignatureAndSend(multiSign,dFactory,"createSystemCoin",account,accounts,"H2O","H2O");
         let h2oCoin = await dFactory.systemCoin();
         let systemCoin = await mineCoin.at(h2oCoin);
-        let minePool = await coinMinePool.new(multiSign.address,accounts[0],accounts[1],h2oCoin,{from:account});
-        await this.multiSignatureAndSend(multiSign,dFactory,"setSystemCoinMinePool",account,accounts,minePool.address);
+//        let minePool = await coinMinePool.new(multiSign.address,accounts[0],accounts[1],h2oCoin,{from:account});
+//        await this.multiSignatureAndSend(multiSign,dFactory,"setSystemCoinMinePool",account,accounts,minePool.address);
 
 
         return {
@@ -39,7 +39,7 @@ module.exports = {
             systemCoin:systemCoin,
             multiSignature : multiSign,
             factory : dFactory,
-            minePool : minePool
+//            minePool : minePool
         }
     },
     createTestFactory : async function(account,accounts) {
@@ -48,17 +48,17 @@ module.exports = {
         let oracle = await this.createFromJson("D:\\work\\solidity\\PhoenixOptionsV1.0\\build\\contracts\\PHXOracle.json",account);
         let dFactory = await defrostFactoryTest.new(multiSign.address,accounts[0],accounts[1],accounts[1],oracle.address,{from:account});
         
-        await this.multiSignatureAndSend(multiSign,dFactory,"createSystemCoin",account,accounts,"H2O","H2O",5777);
+        await this.multiSignatureAndSend(multiSign,dFactory,"createSystemCoin",account,accounts,"H2O","H2O");
         let h2oCoin = await dFactory.systemCoin();
         let systemCoin = await mineCoin.at(h2oCoin);
-        let minePool = await coinMinePool.new(multiSign.address,accounts[0],accounts[1],h2oCoin,{from:account});
-        await this.multiSignatureAndSend(multiSign,dFactory,"setSystemCoinMinePool",account,accounts,minePool.address);
+//        let minePool = await coinMinePool.new(multiSign.address,accounts[0],accounts[1],h2oCoin,{from:account});
+//        await this.multiSignatureAndSend(multiSign,dFactory,"setSystemCoinMinePool",account,accounts,minePool.address);
         return {
             oracle: oracle,
             systemCoin:systemCoin,
             multiSignature : multiSign,
             factory : dFactory,
-            minePool : minePool
+//            minePool : minePool
         }
     },
     multiSignatureAndSend: async function(multiContract,toContract,method,account,owners,...args){

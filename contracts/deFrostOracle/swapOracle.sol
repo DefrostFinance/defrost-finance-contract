@@ -5,16 +5,13 @@
 pragma solidity >=0.7.0 <0.8.0;
 import "../modules/IERC20.sol";
 import "../uniswap/IUniswapV2Pair.sol";
-import "../uniswap/IUniswapV2Factory.sol";
 import "./AggregatorV3Interface.sol";
 import "../modules/proxyOwner.sol";
 contract swapOracle is proxyOwner {
-    IUniswapV2Factory public uniswapFactory;
     mapping(uint256 => AggregatorV3Interface) internal assetsMap;
     mapping(uint256 => uint256) internal decimalsMap;
-    constructor(address multiSignature,address origin0,address origin1,address _uniswapFactory) public
+    constructor(address multiSignature,address origin0,address origin1)
     proxyOwner(multiSignature,origin0,origin1) {
-        uniswapFactory = IUniswapV2Factory(_uniswapFactory);
     } 
     /**
       * @notice set price of an asset
@@ -69,38 +66,41 @@ contract swapOracle is proxyOwner {
         (,uint256 price) = _getPrice(underlying);
         return price;
     }
-    function getErc20Price(address erc20) public view returns (uint256) {
-        (,uint256 price) = _getPrice(uint256(erc20));
-        return price;
+    function getErc20Price(address erc20) public view returns (bool,uint256) {
+        return _getPrice(uint256(erc20));
     }
-    function getUniswapPairPrice(address pair) public view returns (uint256) {
+    function getUniswapPairPrice(address pair) public view returns (bool,uint256) {
         IUniswapV2Pair upair = IUniswapV2Pair(pair);
         (uint112 reserve0, uint112 reserve1,) = upair.getReserves();
         (bool have0,uint256 price0) = _getPrice(uint256(upair.token0()));
         (bool have1,uint256 price1) = _getPrice(uint256(upair.token1()));
         uint256 totalAssets = 0;
         if(have0 && have1){
-            totalAssets = price0*reserve0+price1*reserve1;
-        }else if(have0){
-            totalAssets = price0*reserve0*2;
-        }else if(have1){
-            totalAssets = price1*reserve1*2;
+            price0 *= reserve0;  
+            price1 *= reserve1;
+            uint256 tol = price1/10;  
+            bool inTol = (price0 < price1+tol && price0 > price1-tol);
+            totalAssets = price0+price1;
+            uint256 total = upair.totalSupply();
+            if (total == 0){
+                return (false,0);
+            }
+            return (inTol,totalAssets/total);
         }else{
-            return 0;
+            return (false,0);
         }
-        uint256 total = upair.totalSupply();
-        if (total == 0){
-            return 0;
-        }
-        return totalAssets/total;
     }
-    function getPrice(address token) public view returns (uint256) {
-        (bool success, bytes memory returnData) = token.staticcall(abi.encodeWithSignature("getReserves()"));
+    function getPriceInfo(address token) public view returns (bool,uint256){
+        (bool success,) = token.staticcall(abi.encodeWithSignature("getReserves()"));
         if(success){
             return getUniswapPairPrice(token);
         }else{
             return getErc20Price(token);
         }
+    }
+    function getPrice(address token) public view returns (uint256) {
+        (,uint256 price) = getPriceInfo(token);
+        return price;
     }
     function getPrices(address[]calldata assets) external view returns (uint256[]memory) {
         uint256 len = assets.length;
