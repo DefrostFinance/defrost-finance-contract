@@ -5,9 +5,9 @@
 pragma solidity >=0.7.0 <0.8.0;
 import "./lendOracle.sol";
 contract benqiOracle is lendOracle {
-    constructor(address multiSignature,address origin0,address origin1,address _CEther)
+    constructor(address multiSignature,address origin0,address origin1)
     chainLinkOracle(multiSignature,origin0,origin1) {
-        CEther = _CEther;
+        CEther = 0x5C0401e81Bc07Ca70fAD469b451682c0d747Ef1c;
         _setAssetsAggregator(address(0),0x0A77230d17318075983913bC2145DB16C7366156);
         //_setAssetsAggregator(ALPHA ,0x7B0ca9A6D03FE0467A31Ca850f5bcA51e027B3aF);
         //_setAssetsAggregator(AAVE ,0x3CA13391E9fb38a75330fb28f8cc2eB3D9ceceED);
