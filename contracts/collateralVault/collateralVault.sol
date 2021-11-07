@@ -63,8 +63,8 @@ contract collateralVault is vaultEngine {
         _join(account,amount);
     }
     function _join(address account, uint256 amount) internal {
-        collateralBalances[account] = collateralBalances[account].add(amount);
         amount = getPayableAmount(collateralToken,amount);
+        collateralBalances[account] = collateralBalances[account].add(amount);
         emit Join(msg.sender, account, amount);
     }    
     /**
