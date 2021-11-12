@@ -7,6 +7,7 @@ import "./swapOracle.sol";
 contract avaxSwapOracle is swapOracle {
     constructor(address multiSignature,address origin0,address origin1)
     chainLinkOracle(multiSignature,origin0,origin1) {
+        assetPriceMap[uint256(0x1337BedC9D22ecbe766dF105c9623922A27963EC)] = 1e18;
         _setAssetsAggregator(address(0),0x0A77230d17318075983913bC2145DB16C7366156);
         _setAssetsAggregator(0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7,0x0A77230d17318075983913bC2145DB16C7366156);//wavax
         //_setAssetsAggregator(ALPHA ,0x7B0ca9A6D03FE0467A31Ca850f5bcA51e027B3aF);

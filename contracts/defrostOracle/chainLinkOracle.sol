@@ -9,6 +9,8 @@ import "../modules/proxyOwner.sol";
 contract chainLinkOracle is proxyOwner {
     mapping(uint256 => AggregatorV3Interface) internal assetsMap;
     mapping(uint256 => uint256) internal decimalsMap;
+    mapping(uint256 => uint256) internal assetPriceMap;
+    event SetAssetsAggregator(address indexed sender,uint256 asset,address aggeregator);
     constructor(address multiSignature,address origin0,address origin1)
     proxyOwner(multiSignature,origin0,origin1) {
     } 
@@ -29,6 +31,7 @@ contract chainLinkOracle is proxyOwner {
         }
         uint8 priceDecimals = AggregatorV3Interface(aggergator).decimals();
         decimalsMap[uint256(asset)] = 36-priceDecimals-_decimals;
+        emit SetAssetsAggregator(msg.sender,uint256(asset),aggergator);
     }
     /**
       * @notice set price of an underlying
@@ -44,6 +47,7 @@ contract chainLinkOracle is proxyOwner {
         assetsMap[underlying] = AggregatorV3Interface(aggergator);
         uint8 priceDecimals = AggregatorV3Interface(aggergator).decimals();
         decimalsMap[underlying] = 36-priceDecimals-_decimals;
+        emit SetAssetsAggregator(msg.sender,underlying,aggergator);
     }
     function getAssetsAggregator(address asset) public view returns (address,uint256) {
         return (address(assetsMap[uint256(asset)]),decimalsMap[uint256(asset)]);
@@ -58,6 +62,10 @@ contract chainLinkOracle is proxyOwner {
             uint256 tokenDecimals = decimalsMap[underlying];
             return (true,uint256(price)*(10**tokenDecimals));
         }else {
+            uint256 price = assetPriceMap[underlying];
+            if (price > 0){
+                return (true,price);
+            }
             return (false,0);
         }
     }
