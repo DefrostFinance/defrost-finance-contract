@@ -57,7 +57,6 @@ contract SMelt {
         uint256 _interestInterval = interestInterval;
         if (_interestInterval>0){
             uint256 newRate = newAccumulatedRate();
-            totalAssetAmount = totalAssetAmount.mul(newRate)/accumulatedRate;
             accumulatedRate = newRate;
             latestSettleTime = currentTime()/_interestInterval*_interestInterval;
         }else{
