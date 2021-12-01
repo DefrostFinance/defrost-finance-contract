@@ -10,13 +10,10 @@ contract LMQiErc20 is superQiToken {
     using SafeMath for uint256;
     // Define the qiToken token contract
     constructor(address multiSignature,address origin0,address origin1,address _qiToken,address payable _FeePool)
-            superQiToken(multiSignature,origin0,origin1,_FeePool) {
-        qiToken = IERC20(_qiToken);
+            superQiToken(multiSignature,origin0,origin1,_qiToken,_FeePool) {
         underlying = ICErc20(_qiToken).underlying();
         SafeERC20.safeApprove(IERC20(underlying), _qiToken, uint(-1));
-        string memory tokenName_ = string(abi.encodePacked("Super ",IERC20(_qiToken).name()));
-        string memory symble_ = string(abi.encodePacked("S",IERC20(_qiToken).symbol()));
-        setErc20Info(tokenName_,symble_,IERC20(_qiToken).decimals());
+
         address QI = 0x8729438EB15e2C8B576fCc6AeCdA6A148776C0F5;
         swapRoutingPath[QI] = new address[](3);
         swapRoutingPath[QI][0] = QI;
@@ -33,7 +30,7 @@ contract LMQiErc20 is superQiToken {
         if (balance>0){
             uint256 fee = balance.mul(feeRate)/10000;
             oToken.safeTransfer(FeePool,fee);
-            ICErc20(address(qiToken)).mint(balance.sub(fee));
+            ICErc20(address(stakeToken)).mint(balance.sub(fee));
         }
     }
     function claimReward(uint index) internal {
@@ -42,7 +39,7 @@ contract LMQiErc20 is superQiToken {
             return;
         }
         address[] memory qiTokens = new address[](1); 
-        qiTokens[0] = address(qiToken);
+        qiTokens[0] = address(stakeToken);
         compounder.claimReward(info.rewardType,address(this),qiTokens);
         swapTraderJoe(info.rewardToken,info.sellLimit);
     }

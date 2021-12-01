@@ -10,14 +10,8 @@ contract superQiAvax is superQiToken {
     using SafeMath for uint256;
     // Define the qiToken token contract
     constructor(address multiSignature,address origin0,address origin1,address payable _FeePool)
-            superQiToken(multiSignature,origin0,origin1,_FeePool) {
-        IERC20 _qiToken = IERC20(0x5C0401e81Bc07Ca70fAD469b451682c0d747Ef1c);
-        qiToken = _qiToken;
+            superQiToken(multiSignature,origin0,origin1,0x5C0401e81Bc07Ca70fAD469b451682c0d747Ef1c,_FeePool) {
         underlying = address(0);
-        
-        string memory tokenName_ = string(abi.encodePacked("Super ",_qiToken.name()));
-        string memory symble_ = string(abi.encodePacked("S",_qiToken.symbol()));
-        setErc20Info(tokenName_,symble_,_qiToken.decimals());
     }
     function compound() public{
         uint nLen = rewardInfos.length;
@@ -28,7 +22,7 @@ contract superQiAvax is superQiToken {
         if(balance > 0){
             uint256 fee = balance.mul(feeRate)/10000;
             FeePool.transfer(fee);
-            ICEther(address(qiToken)).mint{value:balance.sub(fee)}();
+            ICEther(address(stakeToken)).mint{value:balance.sub(fee)}();
         }
     }
     function claimReward(uint index) internal {
@@ -37,7 +31,7 @@ contract superQiAvax is superQiToken {
             return;
         }
         address[] memory qiTokens = new address[](1); 
-        qiTokens[0] = address(qiToken);
+        qiTokens[0] = address(stakeToken);
         compounder.claimReward(info.rewardType,address(this),qiTokens);
         swapTraderJoe(info.rewardToken,info.sellLimit);
     }
