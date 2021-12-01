@@ -10,7 +10,7 @@ contract defrostHelper is defrostHelperData {
     }
     function getCollateralInfo()external view returns(address[] memory,address[] memory,uint8[] memory,uint256[] memory){
         address[] memory vaults = defrostFactory.getAllVaults();
-        uint256 len = vaults.length;
+        uint256 len = vaults.length-2;
         address[] memory tokens = new address[](len);
         uint8[] memory decimals = new uint8[](len);
         uint256[] memory prices = new uint256[](len);
@@ -18,7 +18,11 @@ contract defrostHelper is defrostHelperData {
             ICollateralVault IVault = ICollateralVault(vaults[i]);
             address oracle = IVault.getOracleAddress();
             tokens[i] = IVault.collateralToken();
-            decimals[i] = IERC20(tokens[i]).decimals();
+            if(tokens[i] == address(0)){
+                decimals[i] = 18;    
+            }else{
+                decimals[i] = IERC20(tokens[i]).decimals();
+            }
             (,prices[i]) = IDSOracle(oracle).getPriceInfo(tokens[i]);
         }
         return (vaults,tokens,decimals,prices);

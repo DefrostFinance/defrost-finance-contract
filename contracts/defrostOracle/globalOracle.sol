@@ -5,7 +5,7 @@
 pragma solidity >=0.7.0 <0.8.0;
 import "./chainLinkOracle.sol";
 import "../uniswap/IUniswapV2Pair.sol";
-import "./ICToken.sol";
+import "../interface/ICToken.sol";
 import "../modules/SafeMath.sol";
 contract globalOracle is chainLinkOracle {
     using SafeMath for uint256;
