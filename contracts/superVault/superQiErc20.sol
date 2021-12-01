@@ -15,10 +15,10 @@ contract LMQiErc20 is superQiToken {
         SafeERC20.safeApprove(IERC20(underlying), _qiToken, uint(-1));
 
         address QI = 0x8729438EB15e2C8B576fCc6AeCdA6A148776C0F5;
-        swapRoutingPath[QI] = new address[](3);
-        swapRoutingPath[QI][0] = QI;
-        swapRoutingPath[QI][1] = WAVAX;
-        swapRoutingPath[QI][2] = underlying;
+        swapRoutingPath[QI][underlying] = new address[](3);
+        swapRoutingPath[QI][underlying][0] = QI;
+        swapRoutingPath[QI][underlying][1] = WAVAX;
+        swapRoutingPath[QI][underlying][2] = underlying;
     }
     function compound() public{
         uint nLen = rewardInfos.length;

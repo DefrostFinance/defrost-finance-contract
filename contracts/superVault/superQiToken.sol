@@ -31,13 +31,7 @@ contract superQiToken is superToken {
         _setReward(1,1,false,address(0),1e15);
     }
      function getSwapRouterPath(address token)public view returns (address[] memory path){
-        path = swapRoutingPath[token];
-        if (path.length > 1){
-            return path;
-        }
-        path = new address[](2);
-        path[0] = token == address(0) ? WAVAX : token;
-        path[1] = underlying == address(0) ? WAVAX : underlying;
+         return getSwapRouterPathInfo(token,underlying);
     }
     function setReward(uint256 index,uint8 _reward,bool _bClosed,address _rewardToken,uint256 _sellLimit)  external onlyOrigin {
         _setReward(index,_reward,_bClosed,_rewardToken,_sellLimit);

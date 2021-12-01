@@ -20,13 +20,13 @@ contract superToken is ERC20,proxyOwner {
     address payable public FeePool;
     uint256 public slipRate = 9500;
     uint256 public feeRate = 1e3;    //1e4
-    mapping(address=>address[]) public swapRoutingPath;
+    mapping(address=>mapping(address=>address[])) public swapRoutingPath;
     address public WAVAX = 0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7;
 
     event SetFeePoolAddress(address indexed from,address _feePool);
     event SetSlipRate(address indexed from,uint256 _slipRate);
     event SetFeeRate(address indexed from,uint256 _feeRate);
-    event SetSwapRoutingPath(address indexed from,address indexed token,address[] swapPath);
+    event SetSwapRoutingPath(address indexed from,address indexed token0,address indexed token1,address[] swapPath);
     // Define the stakeToken token contract
     constructor(address multiSignature,address origin0,address origin1,address _stakeToken,address payable _FeePool)
             proxyOwner(multiSignature,origin0,origin1) {
@@ -84,9 +84,18 @@ contract superToken is ERC20,proxyOwner {
         feeRate = _feeRate;
         emit SetFeeRate(msg.sender,_feeRate);
     }
-    function setSwapRoutingPath(address token,address[] calldata swapPath) external onlyOrigin {
-        swapRoutingPath[token] = swapPath;
-        SetSwapRoutingPath(msg.sender,token,swapPath);
+    function getSwapRouterPathInfo(address token0,address token1)public view returns (address[] memory path){
+        path = swapRoutingPath[token0][token1];
+        if (path.length > 1){
+            return path;
+        }
+        path = new address[](2);
+        path[0] = token0 == address(0) ? WAVAX : token0;
+        path[1] = token1 == address(0) ? WAVAX : token1;
+    }
+    function setSwapRoutingPathInfo(address token0,address token1,address[] calldata swapPath) external onlyOrigin {
+        swapRoutingPath[token0][token1] = swapPath;
+        SetSwapRoutingPath(msg.sender,token0,token1,swapPath);
     }
     modifier notZeroAddress(address inputAddress) {
         require(inputAddress != address(0), "superToken : input zero address");
