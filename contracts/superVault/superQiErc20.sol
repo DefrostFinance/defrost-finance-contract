@@ -2,21 +2,20 @@
 
 pragma solidity >=0.7.0 <0.8.0;
 
-import "./LMQiToken.sol";
-// qiTokenBar is the coolest bar in town. You come in with some qiToken, and leave with more! The longer you stay, the more qiToken you get.
+import "./superQiToken.sol";
 //
-// This contract handles swapping to and from xqiToken, qiTokenSwap's staking token.
-contract LMQiErc20 is LMQiToken {
+// This contract handles swapping to and from superQiErc20
+contract LMQiErc20 is superQiToken {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
     // Define the qiToken token contract
     constructor(address multiSignature,address origin0,address origin1,address _qiToken,address payable _FeePool)
-            LMQiToken(multiSignature,origin0,origin1,_FeePool) {
+            superQiToken(multiSignature,origin0,origin1,_FeePool) {
         qiToken = IERC20(_qiToken);
         underlying = ICErc20(_qiToken).underlying();
         SafeERC20.safeApprove(IERC20(underlying), _qiToken, uint(-1));
-        string memory tokenName_ = string(abi.encodePacked("defrost ",IERC20(_qiToken).name()));
-        string memory symble_ = string(abi.encodePacked("LM_",IERC20(_qiToken).symbol()));
+        string memory tokenName_ = string(abi.encodePacked("Super ",IERC20(_qiToken).name()));
+        string memory symble_ = string(abi.encodePacked("S",IERC20(_qiToken).symbol()));
         setErc20Info(tokenName_,symble_,IERC20(_qiToken).decimals());
         address QI = 0x8729438EB15e2C8B576fCc6AeCdA6A148776C0F5;
         swapRoutingPath[QI] = new address[](3);

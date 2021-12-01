@@ -2,23 +2,21 @@
 
 pragma solidity >=0.7.0 <0.8.0;
 
-import "./LMQiToken.sol";
+import "./superQiToken.sol";
 
-// qiTokenBar is the coolest bar in town. You come in with some qiToken, and leave with more! The longer you stay, the more qiToken you get.
-//
-// This contract handles swapping to and from xqiToken, qiTokenSwap's staking token.
-contract LMQiAvax is LMQiToken {
+// This contract handles swapping to and from superQiAvax.
+contract superQiAvax is superQiToken {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
     // Define the qiToken token contract
     constructor(address multiSignature,address origin0,address origin1,address payable _FeePool)
-            LMQiToken(multiSignature,origin0,origin1,_FeePool) {
+            superQiToken(multiSignature,origin0,origin1,_FeePool) {
         IERC20 _qiToken = IERC20(0x5C0401e81Bc07Ca70fAD469b451682c0d747Ef1c);
         qiToken = _qiToken;
         underlying = address(0);
         
-        string memory tokenName_ = string(abi.encodePacked("defrost ",_qiToken.name()));
-        string memory symble_ = string(abi.encodePacked("LM_",_qiToken.symbol()));
+        string memory tokenName_ = string(abi.encodePacked("Super ",_qiToken.name()));
+        string memory symble_ = string(abi.encodePacked("S",_qiToken.symbol()));
         setErc20Info(tokenName_,symble_,_qiToken.decimals());
     }
     function compound() public{

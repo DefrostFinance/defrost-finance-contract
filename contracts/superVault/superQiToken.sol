@@ -10,10 +10,10 @@ import "../modules/safeErc20.sol";
 import "../interface/ICToken.sol";
 import "../modules/proxyOwner.sol";
 import "../uniswap/IJoeRouter01.sol";
-// qiTokenBar is the coolest bar in town. You come in with some qiToken, and leave with more! The longer you stay, the more qiToken you get.
+// superQiToken is the coolest vault in town. You come in with some qiToken, and leave with more! The longer you stay, the more qiToken you get.
 //
-// This contract handles swapping to and from xqiToken, qiTokenSwap's staking token.
-contract LMQiToken is ERC20,proxyOwner {
+// This contract handles swapping to and from superQiToken.
+contract superQiToken is ERC20,proxyOwner {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
     IERC20 public qiToken;
@@ -125,24 +125,5 @@ contract LMQiToken is ERC20,proxyOwner {
     modifier notZeroAddress(address inputAddress) {
         require(inputAddress != address(0), "LMQiToken : input zero address");
         _;
-    }
-    modifier isAuthorized {
-        require(isOrigin(), "global Oracle/account-not-authorized");
-        _;
-    }
-    /**
-     * @dev Withdraw asset.
-     * @param _assetAddress Asset to be withdrawn.
-     */
-    function withdraw(address _assetAddress) public isAuthorized {
-        uint assetBalance;
-        if (_assetAddress == address(0)) {
-            address self = address(this); // workaround for a possible solidity bug
-            assetBalance = self.balance;
-            msg.sender.transfer(assetBalance);
-        } else {
-            assetBalance = IERC20(_assetAddress).balanceOf(address(this));
-            IERC20(_assetAddress).safeTransfer(msg.sender, assetBalance);
-        }
     }
 }
