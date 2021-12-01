@@ -5,7 +5,7 @@ pragma solidity >=0.7.0 <0.8.0;
 import "./superQiToken.sol";
 //
 // This contract handles swapping to and from superQiErc20
-contract LMQiErc20 is superQiToken {
+contract superQiErc20 is superQiToken {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
     // Define the qiToken token contract
