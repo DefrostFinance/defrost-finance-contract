@@ -32,6 +32,11 @@ contract LMQiToken is ERC20,proxyOwner {
     IBenqiCompound public compounder = IBenqiCompound(0x486Af39519B4Dc9a7fCcd318217352830E8AD9b4);
     address public traderJoe = 0x60aE616a2155Ee3d9A68541Ba4544862310933d4;
     address public WAVAX = 0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7;
+    event SetReward(address indexed from, uint256 index,uint8 _reward,bool _bClosed,address _rewardToken,uint256 _sellLimit);
+    event SetFeePoolAddress(address indexed from,address _feePool);
+    event SetSlipRate(address indexed from,uint256 _slipRate);
+    event SetFeeRate(address indexed from,uint256 _feeRate);
+    event SetSwapRoutingPath(address indexed from,address indexed token,address[] swapPath);
     // Define the qiToken token contract
     constructor(address multiSignature,address origin0,address origin1,address payable _FeePool)
             proxyOwner(multiSignature,origin0,origin1) {
@@ -83,34 +88,39 @@ contract LMQiToken is ERC20,proxyOwner {
     }
     function setFeePoolAddress(address payable feeAddress)external onlyOrigin notZeroAddress(feeAddress){
         FeePool = feeAddress;
+        emit SetFeePoolAddress(msg.sender,feeAddress);
     }
     function setSlipRate(uint256 _slipRate) external onlyOrigin{
         require(_slipRate < 5000,"slipRate out of range!");
         slipRate = _slipRate;
+        emit SetSlipRate(msg.sender,_slipRate);
     }
     function setFeeRate(uint256 _feeRate) external onlyOrigin{
         require(_feeRate < 5000,"feeRate out of range!");
         feeRate = _feeRate;
+        emit SetFeeRate(msg.sender,_feeRate);
     }
     function setSwapRoutingPath(address token,address[] calldata swapPath) external onlyOrigin {
         swapRoutingPath[token] = swapPath;
+        SetSwapRoutingPath(msg.sender,token,swapPath);
     }
-    function setReward(uint256 index,uint8 _reward,bool _bClosed,address _rewardToken,uint256 _setLimit)  external onlyOrigin {
-        _setReward(index,_reward,_bClosed,_rewardToken,_setLimit);
+    function setReward(uint256 index,uint8 _reward,bool _bClosed,address _rewardToken,uint256 _sellLimit)  external onlyOrigin {
+        _setReward(index,_reward,_bClosed,_rewardToken,_sellLimit);
     }
-    function _setReward(uint256 index,uint8 _reward,bool _bClosed,address _rewardToken,uint256 _setLimit) internal{
+    function _setReward(uint256 index,uint8 _reward,bool _bClosed,address _rewardToken,uint256 _sellLimit) internal{
         if(index <rewardInfos.length){
             rewardInfo storage info = rewardInfos[index];
             info.rewardType = _reward;
             info.bClosed = _bClosed;
             info.rewardToken = _rewardToken;
-            info.sellLimit = _setLimit;
+            info.sellLimit = _sellLimit;
         }else{
-            rewardInfos.push(rewardInfo(_reward,_bClosed,_rewardToken,_setLimit));
+            rewardInfos.push(rewardInfo(_reward,_bClosed,_rewardToken,_sellLimit));
             if(_rewardToken != address(0)){
                 SafeERC20.safeApprove(IERC20(_rewardToken), traderJoe, uint(-1));
             }
         }
+        emit SetReward(msg.sender,index,_reward,_bClosed,_rewardToken,_sellLimit);
     }
     modifier notZeroAddress(address inputAddress) {
         require(inputAddress != address(0), "LMQiToken : input zero address");
