@@ -58,6 +58,7 @@ contract superCurveAv3 is superToken {
         emit SetReward(msg.sender,index,_reward,_bClosed,_rewardToken,_sellLimit);
     }
     function compound() public{
+        latestCompoundTime = block.timestamp;
         curveGauge.claim_rewards();
         uint nLen = rewardInfos.length;
         for (uint i=0;i<nLen;i++){

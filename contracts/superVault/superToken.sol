@@ -20,6 +20,7 @@ contract superToken is ERC20,proxyOwner {
     address payable public FeePool;
     uint256 public slipRate = 9500;
     uint256 public feeRate = 1e3;    //1e4
+    uint256 public latestCompoundTime;
     mapping(address=>mapping(address=>address[])) public swapRoutingPath;
     address public WAVAX = 0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7;
 

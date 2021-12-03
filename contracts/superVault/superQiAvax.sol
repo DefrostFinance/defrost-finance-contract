@@ -14,6 +14,7 @@ contract superQiAvax is superQiToken {
         underlying = address(0);
     }
     function compound() public{
+        latestCompoundTime = block.timestamp;
         uint nLen = rewardInfos.length;
         for (uint i=0;i<nLen;i++){
             claimReward(i);

@@ -21,6 +21,7 @@ contract superQiErc20 is superQiToken {
         swapRoutingPath[QI][underlying][2] = underlying;
     }
     function compound() public{
+        latestCompoundTime = block.timestamp;
         uint nLen = rewardInfos.length;
         for (uint i=0;i<nLen;i++){
             claimReward(i);
