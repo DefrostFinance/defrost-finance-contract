@@ -19,7 +19,7 @@ contract superToken is ERC20,proxyOwner,ReentrancyGuard {
     using SafeMath for uint256;
     IERC20 public stakeToken;
     address payable public FeePool;
-    uint256 public slipRate = 9500;
+    uint256 public slipRate = 9900;
     uint256 public feeRate = 1e3;    //1e4
     uint256 public latestCompoundTime;
     mapping(address=>mapping(address=>address[])) public swapRoutingPath;
