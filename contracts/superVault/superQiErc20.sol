@@ -20,7 +20,7 @@ contract superQiErc20 is superQiToken {
         swapRoutingPath[QI][underlying][1] = WAVAX;
         swapRoutingPath[QI][underlying][2] = underlying;
     }
-    function compound() public{
+    function compound() external{
         latestCompoundTime = block.timestamp;
         uint nLen = rewardInfos.length;
         for (uint i=0;i<nLen;i++){

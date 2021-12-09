@@ -13,7 +13,7 @@ contract superQiAvax is superQiToken {
             superQiToken(multiSignature,origin0,origin1,0x5C0401e81Bc07Ca70fAD469b451682c0d747Ef1c,_FeePool) {
         underlying = address(0);
     }
-    function compound() public{
+    function compound() external{
         latestCompoundTime = block.timestamp;
         uint nLen = rewardInfos.length;
         for (uint i=0;i<nLen;i++){

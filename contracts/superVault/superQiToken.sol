@@ -21,8 +21,8 @@ contract superQiToken is superToken {
         uint256 sellLimit;
     }
     rewardInfo[] public rewardInfos;
-    IBenqiCompound public compounder = IBenqiCompound(0x486Af39519B4Dc9a7fCcd318217352830E8AD9b4);
-    address public traderJoe = 0x60aE616a2155Ee3d9A68541Ba4544862310933d4;
+    IBenqiCompound public constant compounder = IBenqiCompound(0x486Af39519B4Dc9a7fCcd318217352830E8AD9b4);
+    address public constant traderJoe = 0x60aE616a2155Ee3d9A68541Ba4544862310933d4;
     event SetReward(address indexed from, uint256 index,uint8 _reward,bool _bClosed,address _rewardToken,uint256 _sellLimit);
     // Define the qiToken token contract
     constructor(address multiSignature,address origin0,address origin1,address _stakeToken,address payable _FeePool)

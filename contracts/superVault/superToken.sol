@@ -10,10 +10,11 @@ import "../modules/safeErc20.sol";
 import "../interface/ICToken.sol";
 import "../modules/proxyOwner.sol";
 import "../uniswap/IJoeRouter01.sol";
+import "../modules/ReentrancyGuard.sol";
 // superToken is the coolest vault in town. You come in with some token, and leave with more! The longer you stay, the more token you get.
 //
 // This contract handles swapping to and from superToken.
-contract superToken is ERC20,proxyOwner {
+contract superToken is ERC20,proxyOwner,ReentrancyGuard {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
     IERC20 public stakeToken;
@@ -22,7 +23,7 @@ contract superToken is ERC20,proxyOwner {
     uint256 public feeRate = 1e3;    //1e4
     uint256 public latestCompoundTime;
     mapping(address=>mapping(address=>address[])) public swapRoutingPath;
-    address public WAVAX = 0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7;
+    address public constant WAVAX = 0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7;
 
     event SetFeePoolAddress(address indexed from,address _feePool);
     event SetSlipRate(address indexed from,uint256 _slipRate);
@@ -43,7 +44,7 @@ contract superToken is ERC20,proxyOwner {
 
     // Enter the bar. Pay some stakeTokens. Earn some shares.
     // Locks stakeToken and mints superToken
-    function enter(uint256 _amount) public {
+    function enter(uint256 _amount) external nonReentrant {
         // Gets the amount of stakeToken locked in the contract
         uint256 totalstakeToken = stakeToken.balanceOf(address(this));
         // Gets the amount of superToken in existence
@@ -63,7 +64,7 @@ contract superToken is ERC20,proxyOwner {
 
     // Leave the bar. Claim back your stakeTokens.
     // Unlocks the staked + gained stakeToken and burns superToken
-    function leave(uint256 _share) public {
+    function leave(uint256 _share) external nonReentrant {
         // Gets the amount of superToken in existence
         uint256 totalShares = totalSupply();
         // Calculates the amount of stakeToken the superToken is worth
@@ -76,7 +77,7 @@ contract superToken is ERC20,proxyOwner {
         emit SetFeePoolAddress(msg.sender,feeAddress);
     }
     function setSlipRate(uint256 _slipRate) external onlyOrigin{
-        require(_slipRate < 5000,"slipRate out of range!");
+        require(_slipRate < 10000,"slipRate out of range!");
         slipRate = _slipRate;
         emit SetSlipRate(msg.sender,_slipRate);
     }
@@ -96,7 +97,7 @@ contract superToken is ERC20,proxyOwner {
     }
     function setSwapRoutingPathInfo(address token0,address token1,address[] calldata swapPath) external onlyOrigin {
         swapRoutingPath[token0][token1] = swapPath;
-        SetSwapRoutingPath(msg.sender,token0,token1,swapPath);
+        emit SetSwapRoutingPath(msg.sender,token0,token1,swapPath);
     }
     modifier notZeroAddress(address inputAddress) {
         require(inputAddress != address(0), "superToken : input zero address");

@@ -19,8 +19,8 @@ contract superCurveAv3 is superToken {
     rewardInfo[] public rewardInfos;
     ICurveGauge public constant curveGauge = ICurveGauge(0x5B5CFE992AdAC0C9D48E05854B2d91C73a003858);
     ICurvePool public constant curvePool = ICurvePool(0x7f90122BF0700F9E7e1F688fe926940E8839F353);
-    address public av3Crv = 0x1337BedC9D22ecbe766dF105c9623922A27963EC;
-    address public traderJoe = 0x60aE616a2155Ee3d9A68541Ba4544862310933d4;
+    address public constant av3Crv = 0x1337BedC9D22ecbe766dF105c9623922A27963EC;
+    address public constant traderJoe = 0x60aE616a2155Ee3d9A68541Ba4544862310933d4;
         event SetReward(address indexed from, uint256 index,uint8 _reward,bool _bClosed,address _rewardToken,uint256 _sellLimit);
     // Define the qiToken token contract
     constructor(address multiSignature,address origin0,address origin1,address payable _FeePool)
@@ -57,7 +57,7 @@ contract superCurveAv3 is superToken {
         }
         emit SetReward(msg.sender,index,_reward,_bClosed,_rewardToken,_sellLimit);
     }
-    function compound() public{
+    function compound() external{
         latestCompoundTime = block.timestamp;
         curveGauge.claim_rewards();
         uint nLen = rewardInfos.length;
