@@ -76,7 +76,21 @@ contract superVaultOracle is chainLinkOracle {
         address underlying = ISuperToken(token).stakeToken();
         uint256 balance = IERC20(underlying).balanceOf(token);
         //1 qiToken = balance(underlying)/totalSuply super
-        (bool bTol,uint256 price) = getPriceInfo(underlying);
+        (bool bTol,uint256 price) = getInnerTokenPrice(underlying);
         return (bTol,price.mul(balance)/totalSuply);
+    }
+    function getInnerTokenPrice(address token) internal view returns (bool,uint256){
+        (bool bHave,uint256 price) = _getPrice(uint256(token));
+        if(bHave){
+            return (bHave,price);
+        }
+        if(token == CEther){
+            return getCEtherPrice();
+        }
+        (bool success,) = token.staticcall(abi.encodeWithSignature("exchangeRateStored()"));
+        if(success){
+            return getCTokenPrice(token);
+        }
+        return (false,0);
     }
 }

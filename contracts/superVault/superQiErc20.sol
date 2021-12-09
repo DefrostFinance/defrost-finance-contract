@@ -9,8 +9,8 @@ contract superQiErc20 is superQiToken {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
     // Define the qiToken token contract
-    constructor(address multiSignature,address origin0,address origin1,address _qiToken,address payable _FeePool)
-            superQiToken(multiSignature,origin0,origin1,_qiToken,_FeePool) {
+    constructor(address multiSignature,address origin0,address origin1,address _qiToken,address _dsOracle,address payable _FeePool)
+            superQiToken(multiSignature,origin0,origin1,_qiToken,_dsOracle,_FeePool) {
         underlying = ICErc20(_qiToken).underlying();
         SafeERC20.safeApprove(IERC20(underlying), _qiToken, uint(-1));
 
@@ -54,8 +54,7 @@ contract superQiErc20 is superQiToken {
                 return;
             }
             address[] memory path = getSwapRouterPath(token);
-            uint[] memory amountOut = IJoeRouter01(traderJoe).getAmountsOut(balance, path);
-            uint256 minOut = amountOut[amountOut.length-1]*slipRate/10000;
+            uint256 minOut = getSwapMinAmountOut(token,underlying,balance);
             IJoeRouter01(traderJoe).swapExactTokensForTokens(balance,minOut,path,address(this),block.timestamp+30);
         }else{
             uint256 balance = address(this).balance;
@@ -63,8 +62,7 @@ contract superQiErc20 is superQiToken {
                 return;
             }
             address[] memory path = getSwapRouterPath(token);
-            uint[] memory amountOut = IJoeRouter01(traderJoe).getAmountsOut(balance, path);
-            uint256 minOut = amountOut[amountOut.length-1]*slipRate/10000;
+            uint256 minOut = getSwapMinAmountOut(token,underlying,balance);
             IJoeRouter01(traderJoe).swapExactAVAXForTokens{value : balance}(minOut,path,address(this),block.timestamp+30);
         }
     }

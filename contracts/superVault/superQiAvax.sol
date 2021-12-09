@@ -9,8 +9,8 @@ contract superQiAvax is superQiToken {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
     // Define the qiToken token contract
-    constructor(address multiSignature,address origin0,address origin1,address payable _FeePool)
-            superQiToken(multiSignature,origin0,origin1,0x5C0401e81Bc07Ca70fAD469b451682c0d747Ef1c,_FeePool) {
+    constructor(address multiSignature,address origin0,address origin1,address _dsOracle,address payable _FeePool)
+            superQiToken(multiSignature,origin0,origin1,0x5C0401e81Bc07Ca70fAD469b451682c0d747Ef1c,_dsOracle,_FeePool) {
         underlying = address(0);
     }
     function compound() external{
@@ -45,8 +45,7 @@ contract superQiAvax is superQiToken {
             return;
         }
         address[] memory path = getSwapRouterPath(token);
-        uint[] memory amountOut = IJoeRouter01(traderJoe).getAmountsOut(balance, path);
-        uint256 minOut = amountOut[amountOut.length-1]*slipRate/10000;
+        uint256 minOut = getSwapMinAmountOut(token,underlying,balance);
         IJoeRouter01(traderJoe).swapExactTokensForAVAX(balance,minOut,path,address(this),block.timestamp+30);
     }
 }

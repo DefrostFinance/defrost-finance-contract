@@ -8,18 +8,19 @@ import "../modules/IERC20.sol";
 import "../modules/SafeMath.sol";
 import "../modules/safeErc20.sol";
 import "../interface/ICToken.sol";
-import "../modules/proxyOwner.sol";
 import "../uniswap/IJoeRouter01.sol";
 import "../modules/ReentrancyGuard.sol";
+import "../interface/IDSOracle.sol";
 // superToken is the coolest vault in town. You come in with some token, and leave with more! The longer you stay, the more token you get.
 //
 // This contract handles swapping to and from superToken.
-contract superToken is ERC20,proxyOwner,ReentrancyGuard {
+contract superToken is ERC20,ImportOracle,ReentrancyGuard {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
     IERC20 public stakeToken;
+    IDSOracle public dsOracle;
     address payable public FeePool;
-    uint256 public slipRate = 9900;
+    uint256 public slipRate = 9800;
     uint256 public feeRate = 1e3;    //1e4
     uint256 public latestCompoundTime;
     mapping(address=>mapping(address=>address[])) public swapRoutingPath;
@@ -30,9 +31,10 @@ contract superToken is ERC20,proxyOwner,ReentrancyGuard {
     event SetFeeRate(address indexed from,uint256 _feeRate);
     event SetSwapRoutingPath(address indexed from,address indexed token0,address indexed token1,address[] swapPath);
     // Define the stakeToken token contract
-    constructor(address multiSignature,address origin0,address origin1,address _stakeToken,address payable _FeePool)
+    constructor(address multiSignature,address origin0,address origin1,address _stakeToken,address _dsOracle,address payable _FeePool)
             proxyOwner(multiSignature,origin0,origin1) {
         FeePool = _FeePool;
+        _oracle = IDSOracle(_dsOracle);
         stakeToken = IERC20(_stakeToken);
         string memory tokenName_ = string(abi.encodePacked("Super ",IERC20(_stakeToken).name()));
         string memory symble_ = string(abi.encodePacked("S",IERC20(_stakeToken).symbol()));
@@ -98,6 +100,16 @@ contract superToken is ERC20,proxyOwner,ReentrancyGuard {
     function setSwapRoutingPathInfo(address token0,address token1,address[] calldata swapPath) external onlyOrigin {
         swapRoutingPath[token0][token1] = swapPath;
         emit SetSwapRoutingPath(msg.sender,token0,token1,swapPath);
+    }
+    function getSwapMinAmountOut(address tokenIn,address tokenOut,uint256 amountIn)internal view returns(uint256){
+        address[] memory assets = new address[](2);
+        assets[0] = tokenIn;
+        assets[1] = tokenOut;
+        uint256[]memory prices = _oracle.getPrices(assets);
+        if (prices[0]>0 && prices[1]>0){
+            return amountIn.mul(prices[0]).mul(slipRate)/prices[1]/1e4;
+        }
+        return 0;
     }
     modifier notZeroAddress(address inputAddress) {
         require(inputAddress != address(0), "superToken : input zero address");

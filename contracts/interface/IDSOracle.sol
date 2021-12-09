@@ -9,6 +9,7 @@ interface IDSOracle {
   * @return uint mantissa of asset price (scaled by 1e8) or zero if unset or contract paused
   */
     function getPriceInfo(address token) external view returns (bool,uint256);
+    function getPrices(address[]calldata assets) external view returns (uint256[]memory);
 }
 abstract contract ImportOracle is proxyOwner{
     IDSOracle internal _oracle;
