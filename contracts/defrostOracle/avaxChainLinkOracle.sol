@@ -7,9 +7,8 @@ import "./chainLinkOracle.sol";
 import "../interface/ICToken.sol";
 import "../modules/SafeMath.sol";
 import "../interface/ISuperToken.sol";
-contract superVaultOracle is chainLinkOracle {
+contract avaxChainLinkOracle is chainLinkOracle {
     using SafeMath for uint256;
-    address public CEther = 0x5C0401e81Bc07Ca70fAD469b451682c0d747Ef1c;
     constructor(address multiSignature,address origin0,address origin1)
     chainLinkOracle(multiSignature,origin0,origin1) {
         assetPriceMap[uint256(0x1337BedC9D22ecbe766dF105c9623922A27963EC)] = 1e18; // curve av3
@@ -40,61 +39,5 @@ contract superVaultOracle is chainLinkOracle {
         _setAssetsAggregator(0x6e84a6216eA6dACC71eE8E6b0a5B7322EEbC0fDd,0x02D35d3a8aC3e1626d3eE09A78Dd87286F5E8e3a);//joe
         _setAssetsAggregator(0x8729438EB15e2C8B576fCc6AeCdA6A148776C0F5,0x36E039e6391A5E7A7267650979fdf613f659be5D);//qi
         _setAssetsAggregator(0x47536F17F4fF30e64A96a7555826b8f9e66ec468,0x7CF8A6090A9053B01F3DF4D4e6CfEdd8c90d9027);//crv
-    }
-
-    function getCTokenPrice(address ctoken) public view returns (bool,uint256) {
-        ICErc20 token = ICErc20(ctoken);
-        uint256 exchangeRate = token.exchangeRateStored();
-        (bool have,uint256 price) = _getPrice(uint256(token.underlying()));
-        return (have,price.mul(exchangeRate)/1e18);
-    }
-    function getCEtherPrice() public view returns (bool,uint256){
-        ICEther token = ICEther(CEther);
-        uint256 exchangeRate = token.exchangeRateStored();
-        (bool have,uint256 price) = _getPrice(0);
-        return (have,price.mul(exchangeRate)/1e18);
-    }
-    function getPriceInfo(address token) public override view returns (bool,uint256){
-        (bool bHave,uint256 price) = _getPrice(uint256(token));
-        if(bHave){
-            return (bHave,price);
-        }
-        if(token == CEther){
-            return getCEtherPrice();
-        }
-        (bool success,) = token.staticcall(abi.encodeWithSignature("stakeToken()"));
-        if(success){
-            return getSuperPrice(token);
-        }
-        (success,) = token.staticcall(abi.encodeWithSignature("exchangeRateStored()"));
-        if(success){
-            return getCTokenPrice(token);
-        }
-        return (false,0);
-    }
-    function getSuperPrice(address token) public view returns (bool,uint256){
-        address underlying = ISuperToken(token).stakeToken();
-        (bool bTol,uint256 price) = getInnerTokenPrice(underlying);
-        uint256 totalSuply = IERC20(token).totalSupply();
-        if(totalSuply == 0){
-            return (bTol,price);
-        }
-        uint256 balance = IERC20(underlying).balanceOf(token);
-        //1 qiToken = balance(underlying)/totalSuply super
-        return (bTol,price.mul(balance)/totalSuply);
-    }
-    function getInnerTokenPrice(address token) internal view returns (bool,uint256){
-        (bool bHave,uint256 price) = _getPrice(uint256(token));
-        if(bHave){
-            return (bHave,price);
-        }
-        if(token == CEther){
-            return getCEtherPrice();
-        }
-        (bool success,) = token.staticcall(abi.encodeWithSignature("exchangeRateStored()"));
-        if(success){
-            return getCTokenPrice(token);
-        }
-        return (false,0);
     }
 }

@@ -7,6 +7,7 @@ import "./chainLinkOracle.sol";
 import "../uniswap/IUniswapV2Pair.sol";
 import "../interface/ICToken.sol";
 import "../modules/SafeMath.sol";
+import "../interface/ISuperToken.sol";
 contract globalOracle is chainLinkOracle {
     using SafeMath for uint256;
     mapping(address=>address) public SwapPairMap;
@@ -17,7 +18,7 @@ contract globalOracle is chainLinkOracle {
     chainLinkOracle(multiSignature,origin0,origin1) {
         assetPriceMap[uint256(0x1337BedC9D22ecbe766dF105c9623922A27963EC)] = 1e18;
         assetPriceMap[uint256(0x026187BdbC6b751003517bcb30Ac7817D5B766f8)] = 1e18;
-        SwapPairMap[0x47EB6F7525C1aA999FBC9ee92715F5231eB1241D] = 0x2923a62b2531EC744ca0C1e61dfFab1Ad9369FeB;
+        assetPriceMap[uint256(0x5B5CFE992AdAC0C9D48E05854B2d91C73a003858)] = 1e18; // curve av3 gauge
         _setAssetsAggregator(address(0),0x0A77230d17318075983913bC2145DB16C7366156);
         _setAssetsAggregator(0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7,0x0A77230d17318075983913bC2145DB16C7366156);//wavax
         //_setAssetsAggregator(ALPHA ,0x7B0ca9A6D03FE0467A31Ca850f5bcA51e027B3aF);
@@ -41,8 +42,9 @@ contract globalOracle is chainLinkOracle {
         _setAssetsAggregator(0x8eBAf22B6F053dFFeaf46f4Dd9eFA95D89ba8580 ,0x9a1372f9b1B71B3A5a72E092AE67E172dBd7Daaa); //uni
         _setAssetsAggregator(0xA7D7079b0FEaD91F3e65f86E8915Cb59c1a4C664 ,0xF096872672F44d6EBA71458D74fe67F9a77a23B9);//usdc
         _setAssetsAggregator(0xc7198437980c041c805A1EDcbA50c1Ce5db95118 ,0xEBE676ee90Fe1112671f19b6B7459bC678B67e8a);//usdt
-        _setAssetsAggregator(0x6e84a6216eA6dACC71eE8E6b0a5B7322EEbC0fDd,0x02D35d3a8aC3e1626d3eE09A78Dd87286F5E8e3a);
-        _setAssetsAggregator(0x8729438EB15e2C8B576fCc6AeCdA6A148776C0F5,0x36E039e6391A5E7A7267650979fdf613f659be5D);
+        _setAssetsAggregator(0x6e84a6216eA6dACC71eE8E6b0a5B7322EEbC0fDd,0x02D35d3a8aC3e1626d3eE09A78Dd87286F5E8e3a);//joe
+        _setAssetsAggregator(0x8729438EB15e2C8B576fCc6AeCdA6A148776C0F5,0x36E039e6391A5E7A7267650979fdf613f659be5D);//qi
+        _setAssetsAggregator(0x47536F17F4fF30e64A96a7555826b8f9e66ec468,0x7CF8A6090A9053B01F3DF4D4e6CfEdd8c90d9027);//crv
     }
     function setAssetsAggregator1(address asset,address aggergator) public isAuthorized {
         _setAssetsAggregator(asset,aggergator);
@@ -129,7 +131,22 @@ contract globalOracle is chainLinkOracle {
         if(success){
             return (true,getCTokenPrice(token));
         }
+        (success,) = token.staticcall(abi.encodeWithSignature("stakeToken()"));
+        if(success){
+            return getSuperPrice(token);
+        }
         return (false,0);
+    }
+    function getSuperPrice(address token) public view returns (bool,uint256){
+        address underlying = ISuperToken(token).stakeToken();
+        (bool bTol,uint256 price) = getPriceInfo(underlying);
+        uint256 totalSuply = IERC20(token).totalSupply();
+        if(totalSuply == 0){
+            return (bTol,price);
+        }
+        uint256 balance = IERC20(underlying).balanceOf(token);
+        //1 qiToken = balance(underlying)/totalSuply super
+        return (bTol,price.mul(balance)/totalSuply);
     }
     modifier isAuthorized {
         require(isOrigin(), "global Oracle/account-not-authorized");

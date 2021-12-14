@@ -20,8 +20,8 @@ contract superToken is ERC20,ImportOracle,ReentrancyGuard {
     IERC20 public stakeToken;
     IDSOracle public dsOracle;
     address payable public FeePool;
-    uint256 public slipRate = 9800;
-    uint256 public feeRate = 1e3;    //1e4
+    uint256 public slipRate = 9500;
+    uint256 public feeRate = 2e3;    //1e4
     uint256 public latestCompoundTime;
     mapping(address=>mapping(address=>address[])) public swapRoutingPath;
     address public constant WAVAX = 0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7;
