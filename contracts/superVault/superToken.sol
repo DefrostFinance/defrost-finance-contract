@@ -18,7 +18,6 @@ contract superToken is ERC20,ImportOracle,ReentrancyGuard {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
     IERC20 public stakeToken;
-    IDSOracle public dsOracle;
     address payable public FeePool;
     uint256 public slipRate = 9500;
     uint256 public feeRate = 2e3;    //1e4
