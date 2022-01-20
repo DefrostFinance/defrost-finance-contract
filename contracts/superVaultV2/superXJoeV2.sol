@@ -65,4 +65,11 @@ contract superXJoeV2 is superTokenV2 {
         swapTraderJoe(token,joeToken,balance);
 //        swapTraderJoe(token,LPToken1,balance/2);
     }
+    function getStakeTokenPrice() public override view returns (uint256) {
+        uint256 totalSuply = stakeToken.totalSupply();
+        uint256 balance = IERC20(joeToken).balanceOf(address(stakeToken));
+        //1 xjoe = balance(joe)/totalSuply joe
+        (,uint256 price) = oraclePrice(joeToken);
+        return price.mul(balance)/totalSuply;
+    }
 }

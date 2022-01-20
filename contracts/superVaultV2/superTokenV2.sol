@@ -19,7 +19,7 @@ contract superTokenV2 is ERC20,ImportOracle,ReentrancyGuard {
     address payable public FeePool;
     uint256 public slipRate = 9500;
     uint256 public feeRate = 2e3;    //1e4
-    uint256 public enterFee;
+    uint256 public enterFee = 1e10;
     uint256 public leaveFee;
     uint256 public latestCompoundTime;
     uint256 constant calDecimals = 1e18;
@@ -27,7 +27,7 @@ contract superTokenV2 is ERC20,ImportOracle,ReentrancyGuard {
     address public constant WAVAX = 0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7;
     address public constant traderJoe = 0x60aE616a2155Ee3d9A68541Ba4544862310933d4;
     IERC20 public melt = IERC20(0x47EB6F7525C1aA999FBC9ee92715F5231eB1241D);
-    address public constant meltFeePool = 0x286F1738D74E6C1005c802C0686bb81796Fd5318;
+    address public constant meltFeePool = address(0);
 
     struct rewardInfo {
         uint8 rewardType;
@@ -103,11 +103,14 @@ contract superTokenV2 is ERC20,ImportOracle,ReentrancyGuard {
     }
     function _getMeltFee(uint256 rate,uint256 enterAmount) internal view returns (uint256){
         if(rate > 0){
-            (,uint256 price) = _oracle.getPriceInfo(address(stakeToken));
+            uint256 price = getStakeTokenPrice();
             uint256 usdAmount = enterAmount.mul(price)/calDecimals;
             return usdAmount.mul(rate)/calDecimals;
         }
         return 0;
+    }
+    function getStakeTokenPrice() public view virtual returns (uint256) {
+        return calDecimals;
     }
     function getEnterMeltFee(uint256 enterAmount) external view returns (uint256){
         return _getMeltFee(enterFee,enterAmount);

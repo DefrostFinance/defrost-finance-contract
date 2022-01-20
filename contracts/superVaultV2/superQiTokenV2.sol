@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 pragma solidity >=0.7.0 <0.8.0;
-
+import "../interface/ICToken.sol";
 import "./superTokenV2.sol";
 import "../superVault/IBenqiCompound.sol";
 // superToken is the coolest vault in town. You come in with some token, and leave with more! The longer you stay, the more token you get.
@@ -40,5 +40,11 @@ contract superQiTokenV2 is superTokenV2 {
             return;
         }
         swapTraderJoe(token,underlying,balance);
+    }
+    function getStakeTokenPrice() public override view returns (uint256) {
+        ICErc20 token = ICErc20(address(stakeToken));
+        uint256 exchangeRate = token.exchangeRateStored();
+        (,uint256 price) = oraclePrice(address(underlying));
+        return price.mul(exchangeRate)/1e18;
     }
 }

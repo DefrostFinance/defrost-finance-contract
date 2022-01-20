@@ -3,7 +3,6 @@
 pragma solidity >=0.7.0 <0.8.0;
 
 import "./superQiTokenV2.sol";
-import "../interface/ICToken.sol";
 
 // This contract handles swapping to and from superQiAvax.
 contract superQiAvaxV2 is superQiTokenV2 {

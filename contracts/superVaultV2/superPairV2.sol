@@ -91,4 +91,23 @@ contract superPairV2 is superTokenV2 {
         swapTraderJoe(token,LPToken0,balance/2);
         swapTraderJoe(token,LPToken1,balance/2);
     }
+    function getStakeTokenPrice() public override view returns (uint256) {
+        IUniswapV2Pair upair = IUniswapV2Pair(address(stakeToken));
+        (uint112 reserve0, uint112 reserve1,) = upair.getReserves();
+        (bool have0,uint256 price0) = oraclePrice(upair.token0());
+        (bool have1,uint256 price1) = oraclePrice(upair.token1());
+        uint256 totalAssets = 0;
+        if(have0 && have1){
+            price0 *= reserve0;  
+            price1 *= reserve1;
+            totalAssets = price0+price1;
+            uint256 total = upair.totalSupply();
+            if (total == 0){
+                return 0;
+            }
+            return totalAssets/total;
+        }else{
+            return 0;
+        }
+    }
 }
