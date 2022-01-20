@@ -8,17 +8,22 @@ import "../uniswap/IUniswapV2Pair.sol";
 import "../interface/ICToken.sol";
 import "../modules/SafeMath.sol";
 import "../interface/ISuperToken.sol";
+import "../interface/ISmeltSaving.sol";
 contract globalOracle is chainLinkOracle {
     using SafeMath for uint256;
     mapping(address=>address) public SwapPairMap;
     address public CEther = 0x5C0401e81Bc07Ca70fAD469b451682c0d747Ef1c;
     address public xjoe = 0x57319d41F71E81F3c65F2a47CA4e001EbAFd4F33;
     address public joe = 0x6e84a6216eA6dACC71eE8E6b0a5B7322EEbC0fDd;
+    address public melt = 0x47EB6F7525C1aA999FBC9ee92715F5231eB1241D;
+    address public smelt = 0xB2D69B273daa655D1Ac7031615b36e23D5b302f4;
+    ISmeltSaving public smeltsaving = ISmeltSaving(0x1e93b54AC156Ac2FC9714B91Fa10f1b65e2daFD9);
     constructor(address multiSignature,address origin0,address origin1)
     chainLinkOracle(multiSignature,origin0,origin1) {
         assetPriceMap[uint256(0x1337BedC9D22ecbe766dF105c9623922A27963EC)] = 1e18;
         assetPriceMap[uint256(0x026187BdbC6b751003517bcb30Ac7817D5B766f8)] = 1e18;
         assetPriceMap[uint256(0x5B5CFE992AdAC0C9D48E05854B2d91C73a003858)] = 1e18; // curve av3 gauge
+        SwapPairMap[melt] = 0x2923a62b2531EC744ca0C1e61dfFab1Ad9369FeB;
         _setAssetsAggregator(address(0),0x0A77230d17318075983913bC2145DB16C7366156);
         _setAssetsAggregator(0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7,0x0A77230d17318075983913bC2145DB16C7366156);//wavax
         //_setAssetsAggregator(ALPHA ,0x7B0ca9A6D03FE0467A31Ca850f5bcA51e027B3aF);
@@ -104,10 +109,18 @@ contract globalOracle is chainLinkOracle {
         (,uint256 price) = _getPrice(0);
         return (price.mul(exchangeRate)/1e18);
     } 
+    function getSmeltPrice() public view returns (bool,uint256){
+        uint256 amount = smeltsaving.getMeltAmount(1e18);
+        uint256 price = getSwapTokenPrice(melt);
+        return (true,price.mul(amount)/1e18);
+    }
     function getPriceInfo(address token) public override view returns (bool,uint256){
         (bool bHave,uint256 price) = _getPrice(uint256(token));
         if(bHave){
             return (bHave,price);
+        }
+        if(token == smelt){
+            return getSmeltPrice();
         }
         if(token == CEther){
             return (true,getCEtherPrice());
@@ -145,6 +158,9 @@ contract globalOracle is chainLinkOracle {
             return (bTol,price);
         }
         uint256 balance = IERC20(underlying).balanceOf(token);
+        if (balance == 0) {
+            balance = ISuperToken(token).stakeBalance();
+        }
         //1 qiToken = balance(underlying)/totalSuply super
         return (bTol,price.mul(balance)/totalSuply);
     }
