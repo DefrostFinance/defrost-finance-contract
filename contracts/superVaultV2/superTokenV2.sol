@@ -19,7 +19,7 @@ contract superTokenV2 is ERC20,ImportOracle,ReentrancyGuard {
     address payable public FeePool;
     uint256 public slipRate = 9500;
     uint256 public feeRate = 2e3;    //1e4
-    uint256 public enterFee = 1e10;
+    uint256 public enterFee = 5e15;
     uint256 public leaveFee = 0;
     uint256 public latestCompoundTime;
     uint256 constant calDecimals = 1e18;

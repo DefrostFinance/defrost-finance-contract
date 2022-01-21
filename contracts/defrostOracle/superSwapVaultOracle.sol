@@ -10,10 +10,10 @@ import "../interface/ISuperToken.sol";
 import "../interface/IStakeDao.sol";
 contract superSwapVaultOracle is chainLinkOracle {
     using SafeMath for uint256;
-    address public CEther = 0x5C0401e81Bc07Ca70fAD469b451682c0d747Ef1c;
-    address public joe = 0x6e84a6216eA6dACC71eE8E6b0a5B7322EEbC0fDd;
-    address public xjoe = 0x57319d41F71E81F3c65F2a47CA4e001EbAFd4F33;
-    address public sdav3CRV = 0x0665eF3556520B21368754Fb644eD3ebF1993AD4;
+    address public constant CEther = 0x5C0401e81Bc07Ca70fAD469b451682c0d747Ef1c;
+    address public constant joe = 0x6e84a6216eA6dACC71eE8E6b0a5B7322EEbC0fDd;
+    address public constant xjoe = 0x57319d41F71E81F3c65F2a47CA4e001EbAFd4F33;
+    address public constant sdav3CRV = 0x0665eF3556520B21368754Fb644eD3ebF1993AD4;
     address public constant av3Crv = 0x1337BedC9D22ecbe766dF105c9623922A27963EC;
     constructor(address multiSignature,address origin0,address origin1)
     chainLinkOracle(multiSignature,origin0,origin1) {
