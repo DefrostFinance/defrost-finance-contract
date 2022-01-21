@@ -7,11 +7,14 @@ import "./chainLinkOracle.sol";
 import "../uniswap/IUniswapV2Pair.sol";
 import "../modules/SafeMath.sol";
 import "../interface/ISuperToken.sol";
+import "../interface/IStakeDao.sol";
 contract superSwapVaultOracle is chainLinkOracle {
     using SafeMath for uint256;
     address public CEther = 0x5C0401e81Bc07Ca70fAD469b451682c0d747Ef1c;
     address public joe = 0x6e84a6216eA6dACC71eE8E6b0a5B7322EEbC0fDd;
     address public xjoe = 0x57319d41F71E81F3c65F2a47CA4e001EbAFd4F33;
+    address public sdav3CRV = 0x0665eF3556520B21368754Fb644eD3ebF1993AD4;
+    address public constant av3Crv = 0x1337BedC9D22ecbe766dF105c9623922A27963EC;
     constructor(address multiSignature,address origin0,address origin1)
     chainLinkOracle(multiSignature,origin0,origin1) {
         assetPriceMap[uint256(0x1337BedC9D22ecbe766dF105c9623922A27963EC)] = 1e18; // curve av3
@@ -52,6 +55,9 @@ contract superSwapVaultOracle is chainLinkOracle {
         if(token == xjoe){
             return getXjoePrice();
         }
+        if(token == sdav3CRV) {
+            return getSdav3CRVPrice();
+        }  
         (bool success,) = token.staticcall(abi.encodeWithSignature("stakeToken()"));
         if(success){
             return getSuperPrice(token);
@@ -81,6 +87,9 @@ contract superSwapVaultOracle is chainLinkOracle {
         if(token == xjoe){
             return getXjoePrice();
         }
+        if(token == sdav3CRV) {
+            return getSdav3CRVPrice();
+        }   
         (bool success,) = token.staticcall(abi.encodeWithSignature("getReserves()"));
         if(success){
             return getUniswapPairPrice(token);
@@ -96,6 +105,12 @@ contract superSwapVaultOracle is chainLinkOracle {
                 return (bTol,price);
             }
             return (bTol,price.mul(balance)/totalSuply);
+    }
+    function getSdav3CRVPrice() public view returns (bool,uint256){
+        uint256 priceRate = IVault(sdav3CRV).getPricePerFullShare();
+        //1 xjoe = balance(joe)/totalSuply joe
+        (bool have,uint256 price) = getInnerTokenPrice(av3Crv);
+        return (have,price.mul(priceRate)/1e18);
     }
     function getUniswapPairPrice(address pair) public view returns (bool,uint256) {
         IUniswapV2Pair upair = IUniswapV2Pair(pair);

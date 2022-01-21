@@ -3,7 +3,7 @@
 pragma solidity >=0.7.0 <0.8.0;
 
 import "./superTokenV2.sol";
-import "./IStakeDao.sol";
+import "../interface/IStakeDao.sol";
 import "../superVault/ICurveGauge.sol";
 //
 // This contract handles swapping to and from superStakeDaoV2
