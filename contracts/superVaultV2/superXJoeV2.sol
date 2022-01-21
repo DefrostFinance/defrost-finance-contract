@@ -20,7 +20,8 @@ contract superXJoeV2 is superTokenV2 {
     constructor(address multiSignature,address origin0,address origin1,address _stakeToken,address _dsOracle,address payable _FeePool)
             superTokenV2(multiSignature,origin0,origin1,_stakeToken,_dsOracle,_FeePool) {
         poolId = 24;
-
+        IERC20(_stakeToken).safeApprove(address(masterChefJoe), uint(-1));
+        _setReward(0,0,false,joeToken,1e17);
         IERC20(joeToken).safeApprove(address(xJoe),uint256(-1));
     }
     function deposit(address account,uint256 _amount)internal override {

@@ -20,14 +20,14 @@ contract superTokenV2 is ERC20,ImportOracle,ReentrancyGuard {
     uint256 public slipRate = 9500;
     uint256 public feeRate = 2e3;    //1e4
     uint256 public enterFee = 1e10;
-    uint256 public leaveFee;
+    uint256 public leaveFee = 0;
     uint256 public latestCompoundTime;
     uint256 constant calDecimals = 1e18;
     mapping(address=>mapping(address=>address[])) public swapRoutingPath;
     address public constant WAVAX = 0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7;
     address public constant traderJoe = 0x60aE616a2155Ee3d9A68541Ba4544862310933d4;
     IERC20 public melt = IERC20(0x47EB6F7525C1aA999FBC9ee92715F5231eB1241D);
-    address public constant meltFeePool = address(0);
+    address public constant meltFeePool = address(1);
 
     struct rewardInfo {
         uint8 rewardType;
@@ -119,8 +119,12 @@ contract superTokenV2 is ERC20,ImportOracle,ReentrancyGuard {
         uint256 totalShares = totalSupply();
         uint256 totalstakeToken = stakeBalance();
         // Calculates the amount of stakeToken the superToken is worth
-        uint256 what = leaveAmount.mul(totalstakeToken).div(totalShares);
-        return _getMeltFee(leaveFee,what);
+        if (totalShares > 0){
+            uint256 what = leaveAmount.mul(totalstakeToken).div(totalShares);
+            return _getMeltFee(leaveFee,what);
+        }else{
+            return _getMeltFee(leaveFee,leaveAmount);
+        }
     }
     function transferMeltFee(address account,uint256 _amount) internal{
         if(_amount > 0){

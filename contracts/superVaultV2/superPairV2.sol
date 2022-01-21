@@ -21,12 +21,11 @@ contract superPairV2 is superTokenV2 {
     constructor(address multiSignature,address origin0,address origin1,address _stakeToken,address _dsOracle,address payable _FeePool,uint256 _poolId)
             superTokenV2(multiSignature,origin0,origin1,_stakeToken,_dsOracle,_FeePool) {
         poolId = _poolId;
+        IERC20(_stakeToken).safeApprove(address(masterChefJoe), uint(-1));
+        _setReward(0,0,false,joeToken,1e17);
         IUniswapV2Pair pair = IUniswapV2Pair(_stakeToken);
         LPToken0 = pair.token0();
         LPToken1 = pair.token1();
-        string memory tokenName_ = string(abi.encodePacked("Super LP ",IERC20(LPToken0).name()," & ",IERC20(LPToken1).name()));
-        string memory symble_ = string(abi.encodePacked("SLP-",IERC20(LPToken0).symbol(), "-" ,IERC20(LPToken1).symbol()));
-        setErc20Info(tokenName_,symble_,IERC20(_stakeToken).decimals());
         IERC20(LPToken0).safeApprove(address(traderJoe),uint256(-1));
         IERC20(LPToken1).safeApprove(address(traderJoe),uint256(-1));
         setJoeTokenPath(LPToken0);
