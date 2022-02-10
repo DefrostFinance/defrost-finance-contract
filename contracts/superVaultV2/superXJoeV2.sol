@@ -63,7 +63,7 @@ contract superXJoeV2 is superTokenV2 {
         if (balance < sellLimit){
             return;
         }
-        swapTraderJoe(token,joeToken,balance);
+        swapOnDex(token,joeToken,balance);
 //        swapTraderJoe(token,LPToken1,balance/2);
     }
     function getStakeTokenPrice() public override view returns (uint256) {

@@ -32,14 +32,14 @@ contract superQiTokenV2 is superTokenV2 {
         address[] memory qiTokens = new address[](1); 
         qiTokens[0] = address(stakeToken);
         compounder.claimReward(info.rewardType,address(this),qiTokens);
-        swapTraderJoe(info.rewardToken,info.sellLimit);
+        swapOnDex(info.rewardToken,info.sellLimit);
     }
-    function swapTraderJoe(address token,uint256 sellLimit)internal{
+    function swapOnDex(address token,uint256 sellLimit)internal{
         uint256 balance = (token != address(0)) ? IERC20(token).balanceOf(address(this)) : address(this).balance;
         if (balance < sellLimit){
             return;
         }
-        swapTraderJoe(token,underlying,balance);
+        swapOnDex(token,underlying,balance);
     }
     function getStakeTokenPrice() public override view returns (uint256) {
         ICErc20 token = ICErc20(address(stakeToken));

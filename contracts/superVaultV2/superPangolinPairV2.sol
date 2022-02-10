@@ -3,80 +3,69 @@
 pragma solidity >=0.7.0 <0.8.0;
 
 import "./superTokenV2.sol";
-import "../superVault/traderJoe/IMasterChefJoeV2.sol";
+import "../interface/IMiniChefV2.sol";
 import "../uniswap/IUniswapV2Pair.sol";
 // superToken is the coolest vault in town. You come in with some token, and leave with more! The longer you stay, the more token you get.
 //
 // This contract handles swapping to and from superToken.
-contract superPairV2 is superTokenV2 {
+contract superPangolinPairV2 is superTokenV2 {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
     address public LPToken0;
     address public LPToken1;
-    IMasterChefJoeV2 public constant masterChefJoe = IMasterChefJoeV2(0xd6a4F121CA35509aF06A0Be99093d08462f53052);
+    IMiniChefV2 public constant miniChef = IMiniChefV2(0x1f806f7C8dED893fd3caE279191ad7Aa3798E928);
     uint256 public poolId;
-    address public constant joeToken = 0x6e84a6216eA6dACC71eE8E6b0a5B7322EEbC0fDd;
     bool public bEmergencyWithdraw = false;
     event EmergencyWithdraw(address indexed from);
     // Define the qiToken token contract
     constructor(address multiSignature,address origin0,address origin1,address _stakeToken,address _dsOracle,address payable _FeePool,uint256 _poolId)
             superTokenV2(multiSignature,origin0,origin1,_stakeToken,_dsOracle,_FeePool) {
         poolId = _poolId;
-        IERC20(_stakeToken).safeApprove(address(masterChefJoe), uint(-1));
-        _setReward(0,0,false,joeToken,1e17);
+        swapRouter = 0xE54Ca86531e17Ef3616d22Ca28b0D458b6C89106;
+        IERC20(_stakeToken).safeApprove(address(miniChef), uint(-1));
         IERC20(LPToken0).safeApprove(address(swapRouter),uint256(-1));
         IERC20(LPToken1).safeApprove(address(swapRouter),uint256(-1));
-        setJoeTokenPath(LPToken0);
-        setJoeTokenPath(LPToken1);
     }
     function setTokenErc20() internal override{
         IUniswapV2Pair pair = IUniswapV2Pair(address(stakeToken));
         LPToken0 = pair.token0();
         LPToken1 = pair.token1();
-        string memory tokenName_ = string(abi.encodePacked("Super LP ",IERC20(LPToken0).name()," & ",IERC20(LPToken1).name()));
-        string memory symble_ = string(abi.encodePacked("SLP-",IERC20(LPToken0).symbol(), "-" ,IERC20(LPToken1).symbol()));
+        string memory tokenName_ = string(abi.encodePacked("Super Pangolin LP ",IERC20(LPToken0).name()," & ",IERC20(LPToken1).name()));
+        string memory symble_ = string(abi.encodePacked("SPLP-",IERC20(LPToken0).symbol(), "-" ,IERC20(LPToken1).symbol()));
         setErc20Info(tokenName_,symble_,IERC20(stakeToken).decimals());
     }
     function deposit(address account,uint256 _amount)internal override{
                 // Lock the stakeToken in the contract
         stakeToken.safeTransferFrom(account, address(this), _amount);
         if(!bEmergencyWithdraw){
-            masterChefJoe.deposit(poolId,_amount);
+            miniChef.deposit(poolId,_amount,address(this));
         }
     }
     function withdraw(address account,uint256 _amount)internal override{
         if(!bEmergencyWithdraw){
-            masterChefJoe.withdraw(poolId,_amount);
+            miniChef.withdraw(poolId,_amount,account);
+        }else{
+            stakeToken.safeTransfer(account, _amount);
         }
-        stakeToken.safeTransfer(account, _amount);
     }
     function stakeBalance()public view override returns (uint256){
         if(!bEmergencyWithdraw){
-            (uint amount,) = masterChefJoe.userInfo(poolId,address(this));
+            (uint amount,) = miniChef.userInfo(poolId,address(this));
             return amount;
         }else{
             return stakeToken.balanceOf(address(this));
         }
     }
     function emergencyWithdraw()external onlyOrigin {
-        require(!bEmergencyWithdraw,"superPairV2 : supervault has been emergency withdrawn!");
+        require(!bEmergencyWithdraw,"superPangolinPairV2 : supervault has been emergency withdrawn!");
         bEmergencyWithdraw = true;
-        masterChefJoe.emergencyWithdraw(poolId);
-        emit EmergencyWithdraw(msg.sender);
-    }
-
-    function setJoeTokenPath(address _token) internal {
-        if(_token != WAVAX){
-            swapRoutingPath[joeToken][_token] = new address[](3);
-            swapRoutingPath[joeToken][_token][0] = joeToken;
-            swapRoutingPath[joeToken][_token][1] = WAVAX;
-            swapRoutingPath[joeToken][_token][2] = _token;
-        }
+        miniChef.emergencyWithdraw(poolId, address(this));
+        emit EmergencyWithdraw(msg.sender);        
     }
     function compound() external{
-        require(!bEmergencyWithdraw,"superPairV2 : supervault has been emergency withdrawn!");
+        require(!bEmergencyWithdraw,"superPangolinPairV2 : supervault has been emergency withdrawn!");
         latestCompoundTime = block.timestamp;
-        masterChefJoe.deposit(poolId,0);
+        miniChef.harvest(poolId,address(this));
         uint nLen = rewardInfos.length;
         for (uint i=0;i<nLen;i++){
             rewardInfo memory info = rewardInfos[i];
@@ -96,7 +85,7 @@ contract superPairV2 is superTokenV2 {
             balance1 = balance1.sub(fee);
             IJoeRouter01(swapRouter).addLiquidity(LPToken0, LPToken1, balance0, balance1,0,0, address(this), block.timestamp+30);
             balance0 = IERC20(stakeToken).balanceOf(address(this));
-            masterChefJoe.deposit(poolId,balance0);
+            miniChef.deposit(poolId,balance0,address(this));
         }
     }
     function swapPair(address token,uint256 sellLimit)internal{

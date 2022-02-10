@@ -34,7 +34,7 @@ contract superStakeDaoV2 is superTokenV2 {
             if(info.bClosed){
                 continue;
             }
-            swapTraderJoe(info.rewardToken,info.sellLimit);
+            swapOnDex(info.rewardToken,info.sellLimit);
         }
         IERC20 oToken = IERC20(underlying);
         uint256 balance = oToken.balanceOf(address(this));
@@ -61,12 +61,12 @@ contract superStakeDaoV2 is superTokenV2 {
     function stakeBalance()public view override returns (uint256){
         return multiRewards.balanceOf(address(this));
     }
-    function swapTraderJoe(address token,uint256 sellLimit)internal{
+    function swapOnDex(address token,uint256 sellLimit)internal{
         uint256 balance = (token != address(0)) ? IERC20(token).balanceOf(address(this)) : address(this).balance;
         if (balance < sellLimit){
             return;
         }
-        swapTraderJoe(token,underlying,balance);
+        swapOnDex(token,underlying,balance);
     }
     function getStakeTokenPrice() public override view returns (uint256) {
         uint256 priceRate = IVault(address(stakeToken)).getPricePerFullShare();

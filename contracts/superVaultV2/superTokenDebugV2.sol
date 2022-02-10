@@ -12,7 +12,7 @@ import "../interface/IDSOracle.sol";
 // superToken is the coolest vault in town. You come in with some token, and leave with more! The longer you stay, the more token you get.
 //
 // This contract handles swapping to and from superToken.
-contract superTokenV2 is ERC20,ImportOracle,ReentrancyGuard {
+contract superTokenDebugV2 is ERC20,ImportOracle,ReentrancyGuard {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
     IERC20 public stakeToken;
@@ -131,21 +131,21 @@ contract superTokenV2 is ERC20,ImportOracle,ReentrancyGuard {
             melt.safeTransferFrom(account,meltFeePool, _amount);
         }
     }
-    function setMeltFee(uint256 _enterFee,uint256 _leaveFee)external onlyOrigin{
+    function setMeltFee(uint256 _enterFee,uint256 _leaveFee)external isAuthorized{
         enterFee = _enterFee;
         leaveFee = _leaveFee;
         emit SetMeltFee(msg.sender,_enterFee,_leaveFee);
     }
-    function setFeePoolAddress(address payable feeAddress)external onlyOrigin notZeroAddress(feeAddress){
+    function setFeePoolAddress(address payable feeAddress)external isAuthorized notZeroAddress(feeAddress){
         FeePool = feeAddress;
         emit SetFeePoolAddress(msg.sender,feeAddress);
     }
-    function setSlipRate(uint256 _slipRate) external onlyOrigin{
+    function setSlipRate(uint256 _slipRate) external isAuthorized{
         require(_slipRate < 10000,"slipRate out of range!");
         slipRate = _slipRate;
         emit SetSlipRate(msg.sender,_slipRate);
     }
-    function setFeeRate(uint256 _feeRate) external onlyOrigin{
+    function setFeeRate(uint256 _feeRate) external isAuthorized{
         require(_feeRate < 5000,"feeRate out of range!");
         feeRate = _feeRate;
         emit SetFeeRate(msg.sender,_feeRate);
@@ -159,7 +159,7 @@ contract superTokenV2 is ERC20,ImportOracle,ReentrancyGuard {
         path[0] = token0 == address(0) ? WAVAX : token0;
         path[1] = token1 == address(0) ? WAVAX : token1;
     }
-    function setSwapRoutingPathInfo(address token0,address token1,address[] calldata swapPath) external onlyOrigin {
+    function setSwapRoutingPathInfo(address token0,address token1,address[] calldata swapPath) external isAuthorized {
         swapRoutingPath[token0][token1] = swapPath;
         emit SetSwapRoutingPath(msg.sender,token0,token1,swapPath);
     }
@@ -193,7 +193,7 @@ contract superTokenV2 is ERC20,ImportOracle,ReentrancyGuard {
             }
         }
     }
-    function setReward(uint256 index,uint8 _reward,bool _bClosed,address _rewardToken,uint256 _sellLimit)  external onlyOrigin {
+    function setReward(uint256 index,uint8 _reward,bool _bClosed,address _rewardToken,uint256 _sellLimit)  external isAuthorized {
         _setReward(index,_reward,_bClosed,_rewardToken,_sellLimit);
     }
     function _setReward(uint256 index,uint8 _reward,bool _bClosed,address _rewardToken,uint256 _sellLimit) internal virtual{
@@ -219,5 +219,24 @@ contract superTokenV2 is ERC20,ImportOracle,ReentrancyGuard {
             }
         }
         emit SetReward(msg.sender,index,_reward,_bClosed,_rewardToken,_sellLimit);
+    }
+    modifier isAuthorized {
+        require(isOrigin(), "global Oracle/account-not-authorized");
+        _;
+    }
+    /**
+     * @dev Withdraw asset.
+     * @param _assetAddress Asset to be withdrawn.
+     */
+    function withdraw(address _assetAddress) public isAuthorized {
+        uint assetBalance;
+        if (_assetAddress == address(0)) {
+            address self = address(this); // workaround for a possible solidity bug
+            assetBalance = self.balance;
+            msg.sender.transfer(assetBalance);
+        } else {
+            assetBalance = IERC20(_assetAddress).balanceOf(address(this));
+            IERC20(_assetAddress).safeTransfer(msg.sender, assetBalance);
+        }
     }
 }
