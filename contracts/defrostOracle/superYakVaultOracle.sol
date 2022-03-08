@@ -48,21 +48,41 @@ contract superYakVaultOracle is chainLinkOracle {
         (bool bGet,uint256 price) = getInnerTokenPrice(IYak(address(token)).depositToken());
         return (bGet,price.mul(ratio)/1e18);
     }
+    function getSuperPrice(address token) public view returns (bool,uint256){
+        address underlying = ISuperToken(token).stakeToken();
+        (bool bTol,uint256 price) = getInnerTokenPrice(underlying);
+        uint256 totalSuply = IERC20(token).totalSupply();
+        if(totalSuply == 0){
+            return (bTol,price);
+        }
+        uint256 balance = ISuperToken(token).stakeBalance();
+        //1 qiToken = balance(underlying)/totalSuply super
+        return (bTol,price.mul(balance)/totalSuply);
+    }
     function getPriceInfo(address token) public override view returns (bool,uint256){
         (bool bHave,uint256 price) = getInnerTokenPrice(token);
+        if(bHave){
+            return (bHave,price);
+        }
+        (bool success,) = token.staticcall(abi.encodeWithSignature("stakeToken()"));
+        if(success){
+            return getSuperPrice(token);
+        }
+        return (false,0);
+        (success,) = token.staticcall(abi.encodeWithSignature("depositToken()"));
+        if(success){
+            return getYakPrice(token);
+        }
+        return (false,0);
+    }
+    function getInnerTokenPrice(address token) internal view returns (bool,uint256){
+        (bool bHave,uint256 price) = _getPrice(uint256(token));
         if(bHave){
             return (bHave,price);
         }
         (bool success,) = token.staticcall(abi.encodeWithSignature("depositToken()"));
         if(success){
             return getYakPrice(token);
-        }
-        return (false,0);
-    }
-        function getInnerTokenPrice(address token) internal view returns (bool,uint256){
-        (bool bHave,uint256 price) = _getPrice(uint256(token));
-        if(bHave){
-            return (bHave,price);
         }
         return (false,0);
     }
